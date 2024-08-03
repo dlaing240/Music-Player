@@ -7,7 +7,7 @@ from mixercontroller import MixerController
 from tracklist import TrackList
 from root import Root
 from albumitem import AlbumItem
-from frames import SideBarFrame
+from sidebarframe import SideBarFrame
 from trackitem import TrackItem
 from artistitem import ArtistItem
 from durationformat import format_duration
@@ -99,15 +99,19 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         Updates the currently highlighted track
         """
         print("Updating highlighted track to: ", track_id, "Current highlighted track is ", self.current_track)
+        # First, check if the previously highlighted track needs to be unhighlighted
+        # The widget may have already been destroyed
         if self.current_track and self.current_track in self.track_items_dict:
             print(self.track_items_dict)
             track_to_remove_highlight = self.track_items_dict[self.current_track]
             print("Removing highlight for: ", track_to_remove_highlight)
             track_to_remove_highlight.remove_highlight()
 
-        track_to_highlight = self.track_items_dict[track_id]
-        track_to_highlight.add_highlight()
-        self.current_track = track_id
+        # Update the new track if it's currently being displayed
+        if self.track_items_dict and track_id in self.track_items_dict:
+            track_to_highlight = self.track_items_dict[track_id]
+            track_to_highlight.add_highlight()
+            self.current_track = track_id
 
     def _configure_grid(self):
         self.grid_columnconfigure(0, weight=1)

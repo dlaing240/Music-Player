@@ -4,7 +4,8 @@ from musicdatabase import MusicDatabase
 from scandirectory import DirectoryScan
 from mixercontroller import MixerController
 from root import Root
-from frames import HeaderFrame, SideBarFrame
+from sidebarframe import SideBarFrame
+from headerframe import HeaderFrame
 from tracklistframe import TrackListFrame
 from playbarframe import PlayBarFrame
 from tracklist import TrackList
