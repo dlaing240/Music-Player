@@ -41,7 +41,7 @@ class App:
 
     def startup(self):
         self.directory_scan.scan_directory()  # Check for new music files
-        self.track_list_frame.display_album_list()
+        self.track_list.get_collection()  # Start up showing all tracks
 
     def run(self):
         self.startup()
