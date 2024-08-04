@@ -1,9 +1,6 @@
-import tkinter as tk
 from functools import partial
 
 from musicdatabase import MusicDatabase
-from tracklist import TrackList
-from root import Root
 from durationformat import format_duration
 from trackitem import TrackItem
 from tracklist import TrackList
@@ -16,13 +13,15 @@ TRACK_LIST_COL = colour_scheme["grey"]
 
 
 class TracksDisplay:
-    def __init__(self, display_frame, display_canvas, music_database: MusicDatabase, track_list: TrackList, mixer_controller: MixerController, play_track_function):
+    def __init__(self, display_frame, display_canvas, music_database: MusicDatabase, track_list: TrackList, mixer_controller: MixerController, play_track_function, add_to_queue_function):
         self.display_frame = display_frame
         self.display_canvas = display_canvas
         self.music_database = music_database
         self.track_list = track_list
         self.mixer_controller = mixer_controller
+
         self.play_track_function = play_track_function
+        self.add_to_queue_function = add_to_queue_function
 
         self.track_items_dict = {}
         self.highlighted_track = None
@@ -32,7 +31,6 @@ class TracksDisplay:
         Updates the display to show the current tracklist
         """
         self.clear_display()
-
         tracks = self.track_list.tracklist  # Get the list of track IDs to display from the tracklist object
         tracks_info = self.music_database.get_track_metadata(tracks)
         track_number = 1
@@ -53,17 +51,15 @@ class TracksDisplay:
         Creates an instance of the TrackItems class for a given track
         """
         track_name = track_info['track_name']
-        print(track_id, track_name)
         artist_id = track_info['artist']
         artist_name = self.music_database.get_artist_name(artist_id)
         album_id = track_info['album']
         album = self.music_database.get_album_title(album_id)
-
         duration_full = track_info['duration']
         duration = format_duration(duration_full)
-
         release_date = track_info['release_date']
         play_command = partial(self.play_track_function, track_id)  # The command passed to the TrackItem buttons
+        add_to_queue_command = partial(self.add_to_queue_function, track_id)
 
         track_item = TrackItem(
             self.display_frame,
@@ -75,9 +71,10 @@ class TracksDisplay:
             album_id=album_id,
             release_date=release_date,
             track_number=track_number,
-            duration=duration
+            duration=duration,
+            add_to_queue_command=add_to_queue_command
         )
-        track_item.grid(row=track_number - 1)
+        track_item.grid(row=track_number - 1, column=0, sticky="news", pady=5, padx=10)
 
         self.track_items_dict[track_id] = track_item
 
@@ -94,13 +91,10 @@ class TracksDisplay:
         """
         Updates the currently highlighted track
         """
-        print("Updating highlighted track to: ", track_id, "Current highlighted track is ", self.highlighted_track)
         # First, check if the previously highlighted track needs to be unhighlighted
         # The widget may have already been destroyed
         if self.highlighted_track and self.highlighted_track in self.track_items_dict:
-            print(self.track_items_dict)
             track_to_remove_highlight = self.track_items_dict[self.highlighted_track]
-            print("Removing highlight for: ", track_to_remove_highlight)
             track_to_remove_highlight.remove_highlight()
 
         # Update the new track if it's currently being displayed
@@ -108,6 +102,3 @@ class TracksDisplay:
             track_to_highlight = self.track_items_dict[track_id]
             track_to_highlight.add_highlight()
             self.highlighted_track = track_id
-
-
-

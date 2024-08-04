@@ -10,13 +10,11 @@ class TrackList:
 
         self.tracklist_updated_observers = []
         self.tracklist = []
+        self.has_changed = False
 
-    def get_collection(self, collection_type=None, collection_id=None ):
+    def get_collection(self, collection_type=None, collection_id=None):
         """
         Gets a list of tracks belonging to a collection, which could be an artist's tracks, album, or playlist.
-        :param collection_type:
-        :param collection_id:
-        :return:
         """
         if not collection_type:
             self.tracklist = self.music_database.get_all_tracks()
@@ -32,14 +30,12 @@ class TrackList:
             print("Unrecognised collection type")
             pass
 
-        print("The current track list is: ", self.tracklist)
         self.send_tracklist_updated_signal()
 
     def send_tracklist_updated_signal(self):
         """
         Sends a signal indicating that the list has been updated to any observing objects
         """
-        print("Track list has been updated: Sending signal to: ", self.tracklist_updated_observers)
         for observer in self.tracklist_updated_observers:
             observer.received_tracklist_updated_signal()
 

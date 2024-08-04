@@ -68,13 +68,10 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         # <Configure> event triggers when the scrollable frame changes size.
         display_frame.bind("<Configure>", self._on_frame_configure)
         display_canvas.bind("<Configure>", self._on_canvas_configure)
-
         display_canvas.configure(yscrollcommand=scrollbar.set, bg=TRACK_LIST_COL, highlightthickness=0)
         display_canvas.grid(row=0, column=0, sticky="news")
         display_canvas.create_window((0, 0), window=display_frame, anchor="nw", tags=["track frame"])
-
         display_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-
         scrollbar.grid(row=0, column=1, sticky="news")
 
         return display_frame, display_canvas
@@ -89,7 +86,6 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
 
     def _on_mousewheel(self, event):
         self.display_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-
 
     def clear_display(self):
         """
@@ -127,21 +123,19 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         """
         self.clear_display()
         self.queue_display.display_queue()
-        self.track_list.tracklist = self.mixer_controller.track_queue
+        self.track_list.has_changed = False  # the tracklist is kept separate from the queue
 
     def received_new_track_signal(self, track_id):
         """
         Method providing the display's response to a new track starting
         """
         self.track_display.update_highlighted_track(track_id)
-        self.queue_display.update_highlighted_track(track_id)
+        self.queue_display.update_highlighted_track()
 
     def send_play_track_signal(self, song_id):
         """
         Signals that the user has requested to play a track
         """
-        print("User request to play song with id: ", song_id)
-        print("Sending play track signal to observers: ", self.play_track_observers)
         for listener in self.play_track_observers:
             listener.received_play_track_signal(song_id)
 
@@ -149,7 +143,6 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         """
         Signals that the user requested to open an album
         """
-        print("Opening album: ", album_id, album_name)
         for observer in self.open_album_observers:
             observer.received_open_album_signal(album_id)
         return
@@ -167,4 +160,3 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         """
         for observer in self.add_to_queue_observers:
             observer.received_add_to_queue_signal(track_id)
-

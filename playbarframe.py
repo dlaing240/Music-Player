@@ -68,14 +68,12 @@ class PlayBarFrame(tk.Frame):
         self.grid_columnconfigure(4, weight=1)
 
     def _event_while_inactive(self):
-        print("Event ignored: Play bar is inactive")
         return
 
     def received_play_track_signal(self, track_id):  # this function handles the event where a user starts playing a track via the tracklist.
         """
         Method to handle the play bar's response to playback starting
         """
-        print("play_track_signal received by Play Bar")
         if not self.active:
             self.active = True
 
@@ -85,7 +83,6 @@ class PlayBarFrame(tk.Frame):
         """
         Method to handle play bar response to a new track starting
         """
-        print("Play bar received new track signal")
         if not self.active:
             self.active = True
 
@@ -125,7 +122,6 @@ class PlayBarFrame(tk.Frame):
         Cycles through the display options for the repeat button
         """
         setting = self.mixer_controller.cycle_repeat_options()  # the mixer controller handles the repeat option functionality
-
         if setting == 0:
             self.repeat_button.config(text="🔁", fg=BUTTON_COL)
         elif setting == 1:
@@ -157,7 +153,6 @@ class PlayBarFrame(tk.Frame):
             self._event_while_inactive()
             return
 
-        print("User requested to skip the current track")
         self.mixer_controller.skip()
 
     def _prev_clicked(self):
@@ -165,7 +160,6 @@ class PlayBarFrame(tk.Frame):
             self._event_while_inactive()
             return
 
-        print("User requested to jump back")
         self.mixer_controller.prev()
 
     def received_now_playing_signal(self):

@@ -96,7 +96,6 @@ class TrackDatabase:
         con.close()
 
         tracks = []
-
         for track_data in tracks_rows:
             tracks.append(track_data[0])
 
@@ -144,7 +143,6 @@ class TrackDatabase:
         file_path = cur.fetchone()[0]
         con.close()
 
-        print("File path is: ", file_path)
         return file_path
 
     def get_duration(self, track_id):

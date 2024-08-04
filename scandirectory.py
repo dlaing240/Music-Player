@@ -39,9 +39,7 @@ class DirectoryScan:
                     release_date = str(audio.get('date', ['Unknown Date'])[0])
                     duration = audio.info.length
                     genre = str(audio.get('genre', ['Unknown Genre']))
-
                     album_artist = str(audio.get('albumartist', ['Unknown Album Artist'])[0])
-                    print(f"The new track is called {track_name}, by {artist} from {album}, released in {release_date}.")
 
                     self._check_to_add_artist(artist)
                     self._check_to_add_album(album, artist, release_date)
