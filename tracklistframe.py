@@ -9,6 +9,7 @@ from sidebarframe import SideBarFrame
 from tracksdisplay import TracksDisplay
 from albumsdisplay import AlbumsDisplay
 from artistdisplay import ArtistsDisplay
+from queuedisplay import QueueDisplay
 
 from root import BUTTON_COL, colour_scheme
 
@@ -30,14 +31,11 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         # Adds itself to listen to the navigation sidebar.
         side_bar_frame.open_album_list_observers.append(self)
         side_bar_frame.open_artist_list_observers.append(self)
+        side_bar_frame.open_queue_observers.append(self)
         #side_bar_frame.open_song_list_observers.append(self)
 
         self.mixer_controller.new_track_observers.append(self)
         self.track_list.tracklist_updated_observers.append(self)  # Observes the tracklist and updates display when it changes
-
-        self.play_track_observers = [mixer_controller, play_bar_frame]
-        self.open_album_observers = [self.track_list]
-        self.open_artist_page_observers = [self.track_list]
 
         # Initialise the Frame
         self.padding_size = self.parent.padding_size
@@ -48,9 +46,15 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         self.display_frame, self.display_canvas = self.create_widgets()  # Create widgets and the frame to place items on.
 
         # Create displays
-        self.track_display = TracksDisplay(self.display_frame, self.display_canvas, self.music_database, self.track_list, self.mixer_controller, self.send_play_track_signal)
+        self.track_display = TracksDisplay(self.display_frame, self.display_canvas, self.music_database, self.track_list, self.mixer_controller, self.send_play_track_signal, self.send_add_to_queue_signal)
         self.albums_display = AlbumsDisplay(self.display_frame, self.display_canvas, self.music_database, self.send_open_album_signal)
         self.artist_display = ArtistsDisplay(self.display_frame, self.display_canvas, self.music_database, self.send_open_artist_page_signal)
+        self.queue_display = QueueDisplay(self.mixer_controller, self.music_database, self.display_canvas, self.display_frame, self.send_play_track_signal, self.send_add_to_queue_signal)
+
+        self.play_track_observers = [mixer_controller, play_bar_frame]
+        self.open_album_observers = [self.track_list]
+        self.open_artist_page_observers = [self.track_list]
+        self.add_to_queue_observers = [self.mixer_controller, self.queue_display]
 
     def _configure_grid(self):
         self.grid_columnconfigure(0, weight=1)
@@ -69,6 +73,8 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         display_canvas.grid(row=0, column=0, sticky="news")
         display_canvas.create_window((0, 0), window=display_frame, anchor="nw", tags=["track frame"])
 
+        display_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
         scrollbar.grid(row=0, column=1, sticky="news")
 
         return display_frame, display_canvas
@@ -81,6 +87,10 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         # Update the width of the scrollable_frame to match the canvas width
         self.display_canvas.itemconfig("track frame", width=event.width)
 
+    def _on_mousewheel(self, event):
+        self.display_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+
     def clear_display(self):
         """
         Removes all widgets on the current display
@@ -88,6 +98,7 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         self.artist_display.clear_display()
         self.track_display.clear_display()
         self.albums_display.clear_display()
+        self.queue_display.clear_display()
 
     def received_tracklist_updated_signal(self):  # TrackListFrames listen for updated track lists.
         """
@@ -110,11 +121,20 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         self.clear_display()
         self.artist_display.display_artist_list()
 
+    def received_open_queue_signal(self):
+        """
+        Responds to the signal to open the queue
+        """
+        self.clear_display()
+        self.queue_display.display_queue()
+        self.track_list.tracklist = self.mixer_controller.track_queue
+
     def received_new_track_signal(self, track_id):
         """
         Method providing the display's response to a new track starting
         """
         self.track_display.update_highlighted_track(track_id)
+        self.queue_display.update_highlighted_track(track_id)
 
     def send_play_track_signal(self, song_id):
         """
@@ -140,3 +160,11 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         """
         for observer in self.open_artist_page_observers:
             observer.received_open_artist_page_signal(artist_id)
+
+    def send_add_to_queue_signal(self, track_id):
+        """
+        Signals that a track is to be added to the queue
+        """
+        for observer in self.add_to_queue_observers:
+            observer.received_add_to_queue_signal(track_id)
+
