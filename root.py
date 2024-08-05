@@ -35,8 +35,9 @@ class Root(tk.Tk):
         super().__init__()
         self.minsize(width=800, height=600)
         self.config(bg=colour_scheme["grey"])
-        self._configure_row_and_cols()  # Allow rows and columns to expand when the window is resized
-        self.padding_size = 2  # Size of space between frames
+        # Allow rows and columns to expand when the window is resized
+        self._configure_row_and_cols()
+        self.padding_size = 2
         self.title("Music Player")
 
     def _configure_row_and_cols(self):

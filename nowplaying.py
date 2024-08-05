@@ -19,13 +19,22 @@ class NowPlayingInfo(tk.Frame):
 
         self.config(bg=PLAY_BAR_COL)
 
-        self.label = tk.Label(self, text="Now Playing:", font=("Arial", 14), bg=PLAY_BAR_COL, fg=BUTTON_COL)
+        self.label = tk.Label(self, text="Now Playing:",
+                              font=("Arial", 14),
+                              bg=PLAY_BAR_COL,
+                              fg=BUTTON_COL)
         self.label.grid(row=0, column=0, padx=10)
 
-        self.track_label = tk.Label(self, text="Track", font=("Arial", 12), bg=PLAY_BAR_COL, fg="white", width=21)
+        self.track_label = tk.Label(self, text="Track",
+                                    font=("Arial", 12),
+                                    bg=PLAY_BAR_COL,
+                                    fg="white", width=21)
         self.track_label.grid(row=1, column=0, pady=5)
 
-        self.info_label = tk.Label(self, text="Artist - Album", font=("Arial", 12), bg=PLAY_BAR_COL, fg="white")
+        self.info_label = tk.Label(self, text="Artist - Album",
+                                   font=("Arial", 12),
+                                   bg=PLAY_BAR_COL,
+                                   fg="white")
         self.info_label.grid(row=2, column=0)
 
         self._grid_config()

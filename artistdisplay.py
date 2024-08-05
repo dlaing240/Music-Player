@@ -5,7 +5,8 @@ from musicdatabase import MusicDatabase
 
 
 class ArtistsDisplay:
-    def __init__(self, display_frame, display_canvas, music_database: MusicDatabase, open_artist_command):
+    def __init__(self, display_frame, display_canvas,
+                 music_database: MusicDatabase, open_artist_command):
         self.display_frame = display_frame
         self.display_canvas = display_canvas
         self.music_database = music_database
@@ -26,18 +27,19 @@ class ArtistsDisplay:
             info = artist_info[artist_id]
             self.create_artist_item(artist_id, info)
 
-        self.display_canvas.yview_moveto(0)  # Moves to the top of the scrollable canvas.
+        # Move to the top of the scrollable canvas.
+        self.display_canvas.yview_moveto(0)
 
     def create_artist_item(self, artist_id, artist_info):
         """
         Creates an instance of the ArtistItem class for the given artist
         """
         artist_name = artist_info["artist_name"]
-        open_artist_page_command = partial(self.open_artist_command, artist_id)
-
-        artist = ArtistItem(self.display_frame, artist_name, open_artist_page_command)
+        open_artist_page_command = partial(self.open_artist_command,
+                                           artist_id)
+        artist = ArtistItem(self.display_frame,
+                            artist_name, open_artist_page_command)
         artist.grid(column=0, sticky="news", pady=5, padx=10)
-
         self.artists_items_dict[artist_id] = artist
 
     def clear_display(self):

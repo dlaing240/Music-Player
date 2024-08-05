@@ -19,7 +19,9 @@ class PlayBarFrame(tk.Frame):
     """
     Class to provide the play bar frame
     """
-    def __init__(self, parent: Root, mixer_controller: MixerController, music_database: MusicDatabase):
+    def __init__(self, parent: Root,
+                 mixer_controller: MixerController,
+                 music_database: MusicDatabase):
         super().__init__()
 
         self.parent = parent
@@ -31,15 +33,16 @@ class PlayBarFrame(tk.Frame):
         self.set_volume_observers = [mixer_controller]
 
         self.padding_size = self.parent.padding_size
-        self.grid(row=2, column=0, columnspan=2, sticky="news", padx=self.padding_size, pady=self.padding_size)
-        self.config(width=800 - self.padding_size*2, height=80 - self.padding_size*2, bg=PLAY_BAR_COL)
+        self.grid(row=2, column=0, columnspan=2, sticky="news",
+                  padx=self.padding_size, pady=self.padding_size)
+        self.config(width=800 - self.padding_size*2,
+                    height=80 - self.padding_size*2, bg=PLAY_BAR_COL)
         self._configure_grid()
 
         self.emoji_font = font.Font(family="Segou UI Emoji", size=20)
-
         self.playing = self.mixer_controller.is_playing()
-
-        self.active = False  # Play bar is inactive until a song is loaded for the first time
+        # Play bar is inactive until a song is loaded for the first time
+        self.active = False
 
         self.main_controls_frame = tk.Frame(self, bg=PLAY_BAR_COL)
         self.main_controls_frame.grid(row=1, column=2, sticky="n")
@@ -52,11 +55,14 @@ class PlayBarFrame(tk.Frame):
         self.seek_bar.grid(row=0, column=2, sticky="s")
 
         initial_vol = self.mixer_controller.get_volume()
-        self.volume_slider = VolumeSlider(self, initial_vol, self.send_set_volume_signal)
-        self.volume_slider.grid(row=0, column=3, rowspan=2, padx=20, sticky="news")
-
-        self.now_playing_info = NowPlayingInfo(self, None, None, None)
-        self.now_playing_info.grid(row=0, column=0, rowspan=2, columnspan=1, padx=5, pady=20, sticky="news")
+        self.volume_slider = VolumeSlider(self, initial_vol,
+                                          self.send_set_volume_signal)
+        self.volume_slider.grid(row=0, column=3,
+                                rowspan=2, padx=20, sticky="news")
+        self.now_playing_info = NowPlayingInfo(self, None,
+                                               None, None)
+        self.now_playing_info.grid(row=0, column=0, rowspan=2, columnspan=1,
+                                   padx=5, pady=20, sticky="news")
 
     def _configure_grid(self):
         self.grid_rowconfigure(0, weight=1)
@@ -70,7 +76,7 @@ class PlayBarFrame(tk.Frame):
     def _event_while_inactive(self):
         return
 
-    def received_play_track_signal(self, track_id):  # this function handles the event where a user starts playing a track via the tracklist.
+    def received_play_track_signal(self, track_id):
         """
         Method to handle the play bar's response to playback starting
         """
@@ -98,21 +104,41 @@ class PlayBarFrame(tk.Frame):
         self.play_button.config(text="▶")
 
     def _create_play_button(self):
-        play_button = tk.Button(self.main_controls_frame, text="▶", command=self._play_pause_clicked, font=("Helvetica, 20"), height=1, width=2, fg=BUTTON_COL, bg=PLAY_BAR_COL, borderwidth=0)
+        play_button = tk.Button(self.main_controls_frame, text="▶",
+                                command=self._play_pause_clicked,
+                                font=("Helvetica, 20"), height=1,
+                                width=2, fg=BUTTON_COL,
+                                bg=PLAY_BAR_COL, borderwidth=0)
         play_button.grid(row=0, column=2, sticky="n", padx=5, pady=0)
         return play_button
 
     def _create_control_buttons(self):
-        skip_button = tk.Button(self.main_controls_frame, text="⏭️", font=self.emoji_font, command=self._skip_clicked, fg=BUTTON_COL, bg=PLAY_BAR_COL, borderwidth=0)
+        skip_button = tk.Button(self.main_controls_frame, text="⏭️",
+                                font=self.emoji_font,
+                                command=self._skip_clicked,
+                                fg=BUTTON_COL, bg=PLAY_BAR_COL,
+                                borderwidth=0)
         skip_button.grid(row=0, column=3, sticky='w', padx=5, pady=0)
 
-        prev_button = tk.Button(self.main_controls_frame, text="⏮️", font=self.emoji_font, command=self._prev_clicked, fg=BUTTON_COL, bg=PLAY_BAR_COL, borderwidth=0)
+        prev_button = tk.Button(self.main_controls_frame, text="⏮️",
+                                font=self.emoji_font,
+                                command=self._prev_clicked,
+                                fg=BUTTON_COL, bg=PLAY_BAR_COL,
+                                borderwidth=0)
         prev_button.grid(row=0, column=1, sticky='e', padx=5, pady=0)
 
-        repeat_button = tk.Button(self.main_controls_frame, text="🔁", font=("Arial", 24), command=self._cycle_repeat_options, fg=BUTTON_COL, bg=PLAY_BAR_COL, borderwidth=0)
+        repeat_button = tk.Button(self.main_controls_frame, text="🔁",
+                                  font=("Arial", 24),
+                                  command=self._cycle_repeat_options,
+                                  fg=BUTTON_COL, bg=PLAY_BAR_COL,
+                                  borderwidth=0)
         repeat_button.grid(row=0, column=4, padx=10, sticky='e')
 
-        shuffle_button = tk.Button(self.main_controls_frame, text="🔀", font=self.emoji_font, command=self._toggle_shuffle, fg=BUTTON_COL, bg=PLAY_BAR_COL, borderwidth=0)
+        shuffle_button = tk.Button(self.main_controls_frame, text="🔀",
+                                   font=self.emoji_font,
+                                   command=self._toggle_shuffle,
+                                   fg=BUTTON_COL, bg=PLAY_BAR_COL,
+                                   borderwidth=0)
         shuffle_button.grid(row=0, column=0, padx=10, sticky='w')
 
         return repeat_button, shuffle_button
@@ -121,7 +147,7 @@ class PlayBarFrame(tk.Frame):
         """
         Cycles through the display options for the repeat button
         """
-        setting = self.mixer_controller.cycle_repeat_options()  # the mixer controller handles the repeat option functionality
+        setting = self.mixer_controller.cycle_repeat_options()
         if setting == 0:
             self.repeat_button.config(text="🔁", fg=BUTTON_COL)
         elif setting == 1:
@@ -178,7 +204,9 @@ class PlayBarFrame(tk.Frame):
             observer.received_set_volume_signal(volume)
 
     def _update_now_playing_info(self, track_id):
-        track_info = self.music_database.get_track_metadata(id_list=[track_id])[track_id]
+        track_info = self.music_database.get_track_metadata(
+            id_list=[track_id]
+        )[track_id]
         track_name = track_info["track_name"]
         artist_id = track_info["artist"]
         artist_name = self.music_database.get_artist_name(artist_id)

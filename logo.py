@@ -11,9 +11,13 @@ class Logo(tk.Frame):
         super().__init__(parent)
 
         self.configure(bg=colour_scheme["grey"])
-        label = tk.Label(self, text="Music Player", bg=colour_scheme["grey"], fg=MUNSELL, font=("Arial", 18))
+        label = tk.Label(self, text="Music Player",
+                         bg=colour_scheme["grey"],
+                         fg=MUNSELL, font=("Arial", 18))
         label.grid(row=0, column=0, sticky="s")
-        logo = tk.Label(self, text="🎹🪗", bg=colour_scheme["grey"], fg=MUNSELL, font=("Arial", 50))
+        logo = tk.Label(self, text="🎹🪗",
+                        bg=colour_scheme["grey"],
+                        fg=MUNSELL, font=("Arial", 50))
         logo.grid(row=1, column=0, sticky="n")
         self._grid_config()
 

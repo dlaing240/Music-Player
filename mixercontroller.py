@@ -9,18 +9,23 @@ from root import Root
 
 class MixerController:
     """
-    Class to provide music player functionality and interactions with the Pygame.mixer module
+    Class to provide music player functionality and interactions with the
+    Pygame mixer module
     """
-    def __init__(self, music_database: MusicDatabase, track_list: TrackList, root: Root):
+    def __init__(self, music_database: MusicDatabase,
+                 track_list: TrackList, root: Root):
         pygame.init()
-        mixer.init(frequency=44100, size=-16, channels=2, buffer=2048)  # Initialises pygame mixer
+        # Initialises pygame mixer
+        mixer.init(frequency=44100, size=-16, channels=2, buffer=2048)
         self.MUSIC_END_EVENT = pygame.USEREVENT + 1
         mixer.music.set_endevent(self.MUSIC_END_EVENT)
 
         self.music_database = music_database
         self.track_list = track_list
-        self.track_list.tracklist_updated_observers.append(self)  # Mixer observes the tracklist for updates
         self.root = root
+
+        # Mixer observes the tracklist for updates
+        self.track_list.tracklist_updated_observers.append(self)
 
         self.raw_queue_list = []  # Stores the tracklist from which the active queue is based on
         self.active_queue = []  # List of tracks that playback will follow
@@ -34,9 +39,8 @@ class MixerController:
         self.loop_song_on = False
         self.shuffle_on = False
         self.current_volume = self.get_volume()
-        #self.tracklist_has_changed = False
 
-        self.new_track_observers = []  # Other objects can add themselves to the mixer controller when they want to detect song changes.
+        self.new_track_observers = []
         self.now_playing_observers = []
 
         self._check_events()  # Starts the loop checking for the event that a song has finished.
@@ -53,13 +57,14 @@ class MixerController:
 
     def received_tracklist_updated_signal(self):
         """
-        Stores the knowledge that the tracklist has been changed in the tracklist_changed variable
+        Stores the knowledge that the tracklist has been changed
         """
         self.track_list.has_changed = True
 
     def update_queue(self):
         """
-        Updates the music queue to the currently displayed tracklist, shuffling if shuffle mode is on
+        Updates the music queue to the currently displayed tracklist,
+        shuffling if shuffle mode is on
         """
         self.raw_queue_list = self.track_list.get_tracklist()
         self.active_queue = self.track_list.get_tracklist()
@@ -67,12 +72,12 @@ class MixerController:
         if self.shuffle_on:
             self.shuffle_queue()
 
-        # self.tracklist_changed = False  # The queue has been changed to match the current tracklist.
         self.track_list.has_changed = False
 
     def load_next_song(self):
         """
-        Loads the next song in the queue, so that it plays automatically when the current song finishes
+        Loads the next song in the queue, so that it plays automatically
+        when the current song finishes
         """
         if self.loop_song_on:
             self.queue_track(self.current_track_id)
@@ -82,7 +87,8 @@ class MixerController:
             next_track_id = self.active_queue[self.pos_in_queue + 1]
             self.queue_track(next_track_id)
         elif self.repeat_on:
-            next_track_id = self.active_queue[0]  # Go back to the beginning of the queue
+            # Go back to the beginning of the queue
+            next_track_id = self.active_queue[0]
             self.queue_track(next_track_id)
         else:
             return
@@ -98,20 +104,22 @@ class MixerController:
         self.current_track_id = self.active_queue[self.pos_in_queue]
 
     def _update_current_track_duration(self):
-        self.current_track_duration = self.music_database.get_duration(self.current_track_id)
+        self.current_track_duration = self.music_database.get_duration(
+            self.current_track_id
+        )
 
-    def received_play_track_signal(self, track_id):  # Signal that is received from the track list component to play a song.
+    def received_play_track_signal(self, track_id):
         """
         Method to respond to the user's request to play a track
         """
-        # Check whether the user is viewing a different tracklist than the current song queue
+        # Update queue if it's different to the tracklist being viewed
         if self.track_list.has_changed:
             self.update_queue()
 
         self.pos_in_queue = self.active_queue.index(track_id)
         self.play_track(track_id)
 
-    def play_track(self, track_id):  # Starts playing the track with the given ID
+    def play_track(self, track_id):
         """
         Method to start playing a track with the given track_id
         """
@@ -122,7 +130,7 @@ class MixerController:
         self.send_new_track_signal(self.current_track_id)
         self.load_next_song()
 
-    def song_end_procedure(self):  # Procedure carried out every time a song ends
+    def song_end_procedure(self):
         """
         Method implementing the procedure that takes place when a song ends
         """
@@ -137,7 +145,7 @@ class MixerController:
                 return
 
         self.update_current_track()
-        self.send_new_track_signal(self.current_track_id)  # Signals to other components that a new song is playing
+        self.send_new_track_signal(self.current_track_id)
         self.load_next_song()
 
     def stop(self):
@@ -172,8 +180,8 @@ class MixerController:
 
     def prev(self):
         """
-        If already near the start of the current track, this goes back to the previous track, otherwise it restarts the
-        current track.
+        If already near the start of the current track, this goes back to the
+        previous track, otherwise it restarts the current track.
         """
         # Check whether more than 5 seconds into the track, in which case restart the track
         if mixer.music.get_pos() / 1000 >= 5:
@@ -184,9 +192,10 @@ class MixerController:
         self.pos_in_queue -= 1
         if self.pos_in_queue < 0:
             if self.repeat_on:
-                self.pos_in_queue = len(self.active_queue) - 1  # go to the end of the queue if repeat is on
+                # go to the end of the queue
+                self.pos_in_queue = len(self.active_queue) - 1
             else:
-                self.pos_in_queue = 0  # Otherwise just repeat the track
+                self.pos_in_queue = 0  # Otherwise repeat the track
 
         self.play_track(self.active_queue[self.pos_in_queue])
         self.send_new_track_signal(self.current_track_id)
@@ -213,7 +222,8 @@ class MixerController:
 
     def get_percent_completed(self):
         """
-        Returns the progress in the current track as a percentage of the track's duration
+        Returns the progress in the current track as a percentage of the
+        track's duration
         """
         current_time = mixer.music.get_pos() / 1000  # Gives the time in seconds
         if self.current_track_duration > 0:
@@ -256,20 +266,22 @@ class MixerController:
 
     def cycle_repeat_options(self):
         """
-        Cycles through the three repeat option: off, repeat queue, and repeat song
-        :return:
+        Cycles through the three repeat options: off, repeat queue, and
+        repeat song
         """
-        if self.repeat_setting_val == 0:  # If repeat was turned off
+        if self.repeat_setting_val == 0:  # Repeat was turned off
             self.repeat_setting_val = 1
             self.repeat_on = True
-        elif self.repeat_setting_val == 1:  # Repeat (repeat queue) was turned on
+        elif self.repeat_setting_val == 1:  # Repeat was turned on
             self.repeat_on = False
             self.repeat_setting_val = 2
             self.loop_song_on = True
         else:  # Loop song was on
             self.loop_song_on = False
             self.repeat_setting_val = 0
-        self.load_next_song()  # next song to be played may have been changed when the repeat setting is changed.
+
+        # This may require a different song to play next
+        self.load_next_song()
 
         return self.repeat_setting_val
 
@@ -283,7 +295,7 @@ class MixerController:
             self.active_queue = self.raw_queue_list.copy()
 
         if self.current_track_id:
-            self.pos_in_queue = self.active_queue.index(self.current_track_id)  # After toggling shuffle, the current song will be in a different position
+            self.pos_in_queue = self.active_queue.index(self.current_track_id)
         self.shuffle_on = not self.shuffle_on
         self.load_next_song()
 
@@ -298,10 +310,18 @@ class MixerController:
     def reorder_queue(self, old_index, new_index, track_id):
         self.active_queue.pop(old_index)
         self.active_queue.insert(new_index, track_id)
-        self.pos_in_queue = self.active_queue.index(self.current_track_id)  # The user may move the position of the current song in the queue
-        self.load_next_song()  # the next song may be different after changing the order of the queue
+        self.pos_in_queue = self.active_queue.index(self.current_track_id)
+        self.load_next_song()
 
     def received_add_to_queue_signal(self, track_id):
         self.active_queue.append(track_id)
         self.raw_queue_list.append(track_id)
         self.load_next_song()  # Queue has changed
+
+    def play_all(self):
+        """
+        Plays all songs in the current tracklist, starting with the first.
+        """
+        self.update_queue()  # Update the queue to match the tracklist
+        # Start playing the first track in the queue
+        self.play_track(self.active_queue[0])

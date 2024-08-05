@@ -16,8 +16,27 @@ class ArtistItem(tk.Frame):
         self.configure(bg=colour_scheme["dark"])
 
     def _create_widgets(self):
-        tk.Label(self, text=self.artist_name, bg=colour_scheme["dark"], fg=colour_scheme["background"],
-                 font=("Arial", 12), anchor='w', height=2).grid(row=0, column=1, padx=10,
-                                                      sticky='w')
-        tk.Button(self, text="Open", bg=BUTTON_COL, command=self.command).grid(row=0, column=0, padx=20)
-
+        tk.Label(
+            self,
+            text=self.artist_name,
+            bg=colour_scheme["dark"],
+            fg=colour_scheme["background"],
+            font=("Arial", 12),
+            anchor='w',
+            height=2
+        ).grid(
+            row=0,
+            column=1,
+            padx=10,
+            sticky='w'
+        )
+        tk.Button(
+            self,
+            text="Open",
+            bg=BUTTON_COL,
+            command=self.command
+        ).grid(
+            row=0,
+            column=0,
+            padx=20
+        )

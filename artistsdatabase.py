@@ -16,12 +16,9 @@ class ArtistsDatabase:
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         # Artist database
-        cur.execute('''
-                CREATE TABLE IF NOT EXISTS artists(
-                artist_id INTEGER PRIMARY KEY,
-                artist_name TEXT NOT NULL
-                )
-                ''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS artists(
+                    artist_id INTEGER PRIMARY KEY,
+                    artist_name TEXT NOT NULL)''')
         con.commit()
         con.close()
 
@@ -39,8 +36,9 @@ class ArtistsDatabase:
         """
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('''
-        INSERT INTO artists (artist_name) VALUES (?)''', (artist_name,))
+        cur.execute('''INSERT INTO artists (artist_name)
+                    VALUES (?)''',
+                    (artist_name,))
         con.commit()
         con.close()
 
@@ -50,7 +48,10 @@ class ArtistsDatabase:
         """
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT artist_id FROM artists WHERE artist_name = ?', (artist_name,))
+        cur.execute('''SELECT artist_id
+                    FROM artists
+                    WHERE artist_name = ?''',
+                    (artist_name,))
         artist = cur.fetchone()
         con.close()
 
@@ -64,7 +65,10 @@ class ArtistsDatabase:
     def get_artist_name(self, artist_id):
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT artist_name FROM artists WHERE artist_id = ?', (artist_id,))
+        cur.execute('''SELECT artist_name
+                    FROM artists
+                    WHERE artist_id = ?''',
+                    (artist_id,))
         artist = cur.fetchone()
         con.close()
         artist_name = artist[0]
@@ -76,7 +80,10 @@ class ArtistsDatabase:
         """
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT artist_id, artist_name FROM artists ORDER BY artist_name COLLATE NOCASE')
+        cur.execute('''SELECT artist_id, artist_name
+                    FROM artists
+                    ORDER BY artist_name 
+                    COLLATE NOCASE''')
         artist_rows = cur.fetchall()
         con.close()
 
@@ -87,19 +94,18 @@ class ArtistsDatabase:
 
     def get_artist_metadata(self, artist_ids):
         """
-        Gets the database data corresponding to each artist in the given list of artist_ids
+        Gets the database data corresponding to each artist in the given list
+        of artist_ids
         """
         id_tuple = tuple(artist_ids)
         expression = '(' + ','.join('?' for _ in id_tuple) + ')'
 
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute(f'''
-        SELECT artist_id, artist_name
-        FROM artists
-        WHERE artist_id IN {expression}
-        ''', id_tuple)
-
+        cur.execute(f'''SELECT artist_id, artist_name
+                    FROM artists
+                    WHERE artist_id IN {expression}
+                    ''', id_tuple)
         artist_rows = cur.fetchall()
 
         artists_info = {}
@@ -120,7 +126,10 @@ class ArtistsDatabase:
         """
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT track_id FROM tracks WHERE artist_id = ?', (artist_id,))
+        cur.execute('''SELECT track_id 
+                    FROM tracks 
+                    WHERE artist_id = ?''',
+                    (artist_id,))
         tracks_rows = cur.fetchall()
         con.close()
 
@@ -128,3 +137,22 @@ class ArtistsDatabase:
         for track_data in tracks_rows:
             tracks.append(track_data[0])
         return tracks
+
+    def get_artist_albumlist(self, artist_id):
+        """
+        Gets a list of albums by the artist
+        """
+        con = sqlite3.connect(self.db_path)
+        cur = con.cursor()
+        cur.execute('''SELECT album_id, album_name 
+                    FROM albums 
+                    WHERE artist_id = ?''',
+                    (artist_id,))
+        tracks_rows = cur.fetchall()
+        con.close()
+
+        albums = {}
+        for album_data in tracks_rows:
+            albums[album_data[0]] = album_data[1]
+        print(albums)
+        return albums

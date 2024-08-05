@@ -5,11 +5,12 @@ from albumsdatabase import AlbumsDatabase
 
 
 class TrackDatabase:
-    def __init__(self, db_path, artist_database: ArtistsDatabase, albums_database: AlbumsDatabase):
+    def __init__(self, db_path,
+                 artist_database: ArtistsDatabase,
+                 albums_database: AlbumsDatabase):
         self.db_path = db_path
         self.artist_database = artist_database
         self.albums_database = albums_database
-
         self.create_database()
 
     def create_database(self):
@@ -21,19 +22,19 @@ class TrackDatabase:
 
         # Tracks database
         cur.execute('''
-        CREATE TABLE IF NOT EXISTS tracks (
-            track_id INTEGER PRIMARY KEY,
-            track_name TEXT NOT NULL,
-            release_date TEXT NOT NULL,
-            genre TEXT NOT NULL,
-            duration REAL NOT NULL,
-            file_path  TEXT NOT NULL UNIQUE,
-            track_number INTEGER NOT NULL,
-            album_id INTEGER NOT NULL,
-            artist_id INTEGER NOT NULL,
-            FOREIGN KEY(album_id) REFERENCES albums(album_id),
-            FOREIGN KEY (artist_id) REFERENCES artists(artist_id)
-        ) 
+            CREATE TABLE IF NOT EXISTS tracks (
+                track_id INTEGER PRIMARY KEY,
+                track_name TEXT NOT NULL,
+                release_date TEXT NOT NULL,
+                genre TEXT NOT NULL,
+                duration REAL NOT NULL,
+                file_path  TEXT NOT NULL UNIQUE,
+                track_number INTEGER NOT NULL,
+                album_id INTEGER NOT NULL,
+                artist_id INTEGER NOT NULL,
+                FOREIGN KEY(album_id) REFERENCES albums(album_id),
+                FOREIGN KEY (artist_id) REFERENCES artists(artist_id)
+            ) 
         ''')
         con.commit()
         con.close()
@@ -45,13 +46,14 @@ class TrackDatabase:
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         cur.execute('SELECT 1 FROM tracks WHERE file_path = ?', (file_path,))
-        exists = cur.fetchone() is not None  # true if the file path was found in the database
+        exists = cur.fetchone() is not None
         con.close()
         return exists
 
     def track_is_duplicate(self, track_name, artist, album, release_date):
         """
-        Checks whether the track data matches a track that's already in the database
+        Checks whether the track data matches a track that's already in the
+        database
         """
         artist_id = self.artist_database.get_artist_id(artist)
         album_id = self.albums_database.get_album_id(album, release_date)
@@ -59,17 +61,19 @@ class TrackDatabase:
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         cur.execute('''
-        SELECT 1 FROM tracks
-        WHERE track_name = ?
-        AND artist_id = ?
-        AND album_id = ?
-        AND release_date = ?
+            SELECT 1 FROM tracks
+            WHERE track_name = ?
+            AND artist_id = ?
+            AND album_id = ?
+            AND release_date = ?
         ''', (track_name, artist_id, album_id, release_date))
+
         is_duplicate = cur.fetchone() is not None
         con.close()
         return is_duplicate
 
-    def insert_track(self, track_name, artist, album, track_number, release_date, genre, duration, file_path):
+    def insert_track(self, track_name, artist, album, track_number,
+                     release_date, genre, duration, file_path):
         """
         Adds the track to the database
         """
@@ -79,9 +83,19 @@ class TrackDatabase:
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         cur.execute('''
-        INSERT INTO tracks (track_name, artist_id, album_id, track_number, release_date, genre, duration, file_path)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (track_name, artist_id, album_id, track_number, release_date, genre, duration, file_path))
+            INSERT INTO tracks (
+                track_name,
+                artist_id, 
+                album_id, 
+                track_number, 
+                release_date, 
+                genre, 
+                duration, 
+                file_path
+                )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (track_name, artist_id, album_id, track_number,
+              release_date, genre, duration, file_path))
         con.commit()
         con.close()
 
@@ -91,7 +105,12 @@ class TrackDatabase:
         """
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT track_id FROM tracks ORDER BY track_name COLLATE NOCASE')
+        cur.execute('''
+            SELECT track_id 
+            FROM tracks 
+            ORDER BY track_name 
+            COLLATE NOCASE
+            ''')
         tracks_rows = cur.fetchall()
         con.close()
 
@@ -103,7 +122,8 @@ class TrackDatabase:
 
     def get_track_metadata(self, id_list):
         """
-        Gets the database data corresponding to the tracks in the list of track_ids.
+        Gets the database data corresponding to the tracks in the list of
+        track_ids.
         """
         id_tuple = tuple(id_list)
         expression = '(' + ','.join('?' for _ in id_tuple) + ')'
@@ -111,9 +131,15 @@ class TrackDatabase:
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         cur.execute(f'''
-        SELECT track_id, track_name, artist_id, album_id, release_date, file_path, duration
-        FROM tracks
-        WHERE track_id IN {expression}''', id_tuple)
+            SELECT track_id,
+                track_name,
+                artist_id, 
+                album_id, 
+                release_date, 
+                file_path, 
+                duration
+            FROM tracks
+            WHERE track_id IN {expression}''', id_tuple)
         tracks_rows = cur.fetchall()
         con.close()
 
@@ -139,7 +165,8 @@ class TrackDatabase:
         """
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT file_path FROM tracks WHERE track_id = ?', (track_id,))
+        cur.execute('SELECT file_path FROM tracks WHERE track_id = ?',
+                    (track_id,))
         file_path = cur.fetchone()[0]
         con.close()
 
@@ -151,8 +178,8 @@ class TrackDatabase:
         """
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT duration FROM tracks WHERE track_id = ?', (track_id,))
+        cur.execute('SELECT duration FROM tracks WHERE track_id = ?',
+                    (track_id,))
         duration = cur.fetchone()[0]
         con.close()
         return duration
-

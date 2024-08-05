@@ -39,11 +39,15 @@ class DirectoryScan:
                     release_date = str(audio.get('date', ['Unknown Date'])[0])
                     duration = audio.info.length
                     genre = str(audio.get('genre', ['Unknown Genre']))
-                    album_artist = str(audio.get('albumartist', ['Unknown Album Artist'])[0])
+                    album_artist = str(
+                        audio.get('albumartist', ['Unknown Album Artist'])[0]
+                    )
 
                     self._check_to_add_artist(artist)
                     self._check_to_add_album(album, artist, release_date)
-                    self._check_to_add_track(track_name, artist, album, track_number, release_date, genre, duration, file_path_str)
+                    self._check_to_add_track(track_name, artist, album,
+                                             track_number, release_date,
+                                             genre, duration, file_path_str)
 
         if no_new_tracks:
             print("No new tracks found")
@@ -62,17 +66,21 @@ class DirectoryScan:
         self.music_database.insert_album(album_name, artist, release_date)
         return
 
-    def _check_to_add_track(self, track_name, artist, album, track_number, release_date, genre, duration, file_path_str):
-        if self.music_database.track_is_duplicate(track_name, artist, album,
-                                                  release_date) and track_name != "Unknown Title":
+    def _check_to_add_track(self, track_name, artist, album,
+                            track_number, release_date, genre,
+                            duration, file_path_str):
+        if (self.music_database.track_is_duplicate(track_name, artist,
+                                                   album, release_date)
+                and track_name != "Unknown Title"):
             print("Track is duplicate. Not added to Database.")
             return
 
         print("Attempting to add track to database")
-        self.music_database.insert_track(track_name, artist, album, track_number, release_date, genre, duration, file_path_str)
+        self.music_database.insert_track(track_name, artist, album,
+                                         track_number, release_date,
+                                         genre, duration, file_path_str)
 
         # Check the file path can now be found in the database
         if self.music_database.track_exists(file_path_str):
             print("Track added successfully")
         return
-

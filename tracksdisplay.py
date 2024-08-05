@@ -13,7 +13,11 @@ TRACK_LIST_COL = colour_scheme["grey"]
 
 
 class TracksDisplay:
-    def __init__(self, display_frame, display_canvas, music_database: MusicDatabase, track_list: TrackList, mixer_controller: MixerController, play_track_function, add_to_queue_function):
+    def __init__(self, display_frame, display_canvas,
+                 music_database: MusicDatabase,
+                 track_list: TrackList,
+                 mixer_controller: MixerController,
+                 play_track_function, add_to_queue_function):
         self.display_frame = display_frame
         self.display_canvas = display_canvas
         self.music_database = music_database
@@ -31,20 +35,23 @@ class TracksDisplay:
         Updates the display to show the current tracklist
         """
         self.clear_display()
-        tracks = self.track_list.tracklist  # Get the list of track IDs to display from the tracklist object
+        # Get the list of track IDs to display from the tracklist object
+        tracks = self.track_list.tracklist
         tracks_info = self.music_database.get_track_metadata(tracks)
         track_number = 1
 
         # Create a track item widget for each track in the list.
         for track_id in tracks:
-            track_info = tracks_info[track_id]  # tracks_info is a dictionary pairing the track_id with its metadata
+            # tracks_info is a dictionary pairing the track_id with its metadata
+            track_info = tracks_info[track_id]
             self.create_track_item(track_id, track_info, track_number)
             track_number += 1
             # Highlight the track item if it's currently playing
             if track_id == self.mixer_controller.current_track_id:
                 self.update_highlighted_track(track_id)
 
-        self.display_canvas.yview_moveto(0)  # Moves to the top of the scrollable canvas.
+        # Move to the top of the scrollable canvas.
+        self.display_canvas.yview_moveto(0)
 
     def create_track_item(self, track_id, track_info, track_number):
         """
@@ -58,7 +65,7 @@ class TracksDisplay:
         duration_full = track_info['duration']
         duration = format_duration(duration_full)
         release_date = track_info['release_date']
-        play_command = partial(self.play_track_function, track_id)  # The command passed to the TrackItem buttons
+        play_command = partial(self.play_track_function, track_id)
         add_to_queue_command = partial(self.add_to_queue_function, track_id)
 
         track_item = TrackItem(
@@ -74,7 +81,8 @@ class TracksDisplay:
             duration=duration,
             add_to_queue_command=add_to_queue_command
         )
-        track_item.grid(row=track_number - 1, column=0, sticky="news", pady=5, padx=10)
+        track_item.grid(row=track_number - 1, column=0,
+                        sticky="news", pady=5, padx=10)
 
         self.track_items_dict[track_id] = track_item
 
@@ -91,9 +99,10 @@ class TracksDisplay:
         """
         Updates the currently highlighted track
         """
-        # First, check if the previously highlighted track needs to be unhighlighted
-        # The widget may have already been destroyed
-        if self.highlighted_track and self.highlighted_track in self.track_items_dict:
+        # Check if the previously highlighted track needs the highlight
+        # removed as it may have already been destroyed
+        if (self.highlighted_track
+                and self.highlighted_track in self.track_items_dict):
             track_to_remove_highlight = self.track_items_dict[self.highlighted_track]
             track_to_remove_highlight.remove_highlight()
 

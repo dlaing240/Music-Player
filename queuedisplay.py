@@ -8,7 +8,9 @@ from durationformat import format_duration
 
 
 class QueueDisplay:
-    def __init__(self, mixer_controller: MixerController, music_database: MusicDatabase, display_canvas, display_frame, play_track_function, add_to_queue_function):
+    def __init__(self, mixer_controller: MixerController,
+                 music_database: MusicDatabase, display_canvas,
+                 display_frame, play_track_function, add_to_queue_function):
         self.mixer_controller = mixer_controller
         self.music_database = music_database
         self.display_canvas = display_canvas
@@ -32,7 +34,8 @@ class QueueDisplay:
 
         for track_id in queue:
             track_info = tracks_info[track_id]
-            self.create_queue_item(track_id, track_info, self.queue_index, self.max_queue_index)
+            self.create_queue_item(track_id, track_info,
+                                   self.queue_index, self.max_queue_index)
             self.queue_index += 1
             if track_id == self.mixer_controller.current_track_id:
                 self.update_highlighted_track()
@@ -49,7 +52,8 @@ class QueueDisplay:
         duration_full = track_info['duration']
         duration = format_duration(duration_full)
         release_date = track_info['release_date']
-        play_command = partial(self.play_track_function, track_id)  # The command passed to the TrackItem buttons
+        # Pass the play button command to the QueueItem
+        play_command = partial(self.play_track_function, track_id)
         add_to_queue_command = partial(self.add_to_queue_function, track_id)
 
         queue_item = QueueItem(
@@ -69,7 +73,8 @@ class QueueDisplay:
             queue_max=queue_max,
             add_to_queue_command=add_to_queue_command
         )
-        queue_item.grid(row=queue_index, column=0, sticky="news", pady=5, padx=10)
+        queue_item.grid(row=queue_index, column=0,
+                        sticky="news", pady=5, padx=10)
 
         self.queue_items_dict[self.queue_index] = queue_item
 
@@ -83,8 +88,10 @@ class QueueDisplay:
         self.queue_items_dict[old_index] = replacement_item
 
         # Change the moved items' rows
-        moved_item.grid(row=new_index, column=0, sticky="news", pady=5, padx=10)
-        replacement_item.grid(row=old_index, column=0, sticky="news", pady=5, padx=10)
+        moved_item.grid(row=new_index, column=0,
+                        sticky="news", pady=5, padx=10)
+        replacement_item.grid(row=old_index, column=0,
+                              sticky="news", pady=5, padx=10)
         replacement_item.queue_index = old_index
         replacement_item.update_track_number()
 
@@ -106,21 +113,22 @@ class QueueDisplay:
         """
         Updates the currently highlighted track
         """
-        # First, check if the previously highlighted track needs to be unhighlighted
-        # The widget may have already been destroyed
-        if self.highlighted_track is not None and self.highlighted_track in self.queue_items_dict:
-            track_to_remove_highlight = self.queue_items_dict[self.highlighted_track]
-            track_to_remove_highlight.remove_highlight()
+        # First, check if the previously highlighted track needs the highlight removed
+        # as it may have already been destroyed
+        if (self.highlighted_track is not None
+                and self.highlighted_track in self.queue_items_dict):
+            track_widget = self.queue_items_dict[self.highlighted_track]
+            track_widget.remove_highlight()
 
         # The dictionary of queue items uses the track's position in the queue as its key
         currently_playing_pos = self.mixer_controller.pos_in_queue
 
         # Update the new track if it's currently being displayed
-        if self.queue_items_dict and currently_playing_pos in self.queue_items_dict:
+        if (self.queue_items_dict
+                and currently_playing_pos in self.queue_items_dict):
             track_to_highlight = self.queue_items_dict[currently_playing_pos]
             track_to_highlight.add_highlight()
             self.highlighted_track = currently_playing_pos
 
     def received_add_to_queue_signal(self, track_id):
         pass
-

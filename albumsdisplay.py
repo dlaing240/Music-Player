@@ -6,7 +6,8 @@ from musicdatabase import MusicDatabase
 
 
 class AlbumsDisplay:
-    def __init__(self, display_frame, display_canvas, music_database: MusicDatabase, open_album_command):
+    def __init__(self, display_frame, display_canvas,
+                 music_database: MusicDatabase, open_album_command):
         self.display_frame = display_frame
         self.display_canvas = display_canvas
         self.music_database = music_database
@@ -26,7 +27,8 @@ class AlbumsDisplay:
             info = albums_info[album]
             self.create_album_item(album, info)
 
-        self.display_canvas.yview_moveto(0)  # Moves to the top of the scrollable canvas.
+        # Move to the top of the scrollable canvas
+        self.display_canvas.yview_moveto(0)
 
     def create_album_item(self, album_id, album_info):
         """
@@ -36,7 +38,8 @@ class AlbumsDisplay:
         artist_id = album_info["artist_id"]
         artist_name = album_info["artist_name"]
         release_date = album_info["release_date"]
-        open_album_command = partial(self.open_album_command, album_id, album_name)
+        open_album_command = partial(self.open_album_command,
+                                     album_id, album_name)
 
         album = AlbumItem(
             self.display_frame,

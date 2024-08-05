@@ -17,14 +17,20 @@ from root import BUTTON_COL, colour_scheme
 TRACK_LIST_COL = colour_scheme["grey"]
 
 
-class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
+class TrackListFrame(tk.Frame):
     """
     Frame that contains the main display for music
     """
-    def __init__(self, parent: Root, music_database: MusicDatabase, mixer_controller: MixerController, play_bar_frame: PlayBarFrame, track_list: TrackList, side_bar_frame: SideBarFrame):
+    def __init__(self, parent: Root,
+                 music_database: MusicDatabase,
+                 mixer_controller: MixerController,
+                 play_bar_frame: PlayBarFrame,
+                 track_list: TrackList,
+                 side_bar_frame: SideBarFrame):
         super().__init__()
         self.parent = parent  # Parent window (root window of the application)
-        self.music_database = music_database  # track database performs database operations
+        # track database performs database operations
+        self.music_database = music_database
         self.mixer_controller = mixer_controller
         self.track_list = track_list
 
@@ -35,26 +41,48 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         #side_bar_frame.open_song_list_observers.append(self)
 
         self.mixer_controller.new_track_observers.append(self)
-        self.track_list.tracklist_updated_observers.append(self)  # Observes the tracklist and updates display when it changes
+        # Observes the tracklist and updates display when it changes
+        self.track_list.tracklist_updated_observers.append(self)
 
         # Initialise the Frame
         self.padding_size = self.parent.padding_size
-        self.grid(row=1, column=1, sticky="news", padx=self.padding_size, pady=self.padding_size)
-        self.config(width=740 - self.padding_size*2, height=300 - self.padding_size*2, bg=TRACK_LIST_COL)
+        self.grid(row=1, column=1, sticky="news",
+                  padx=self.padding_size, pady=self.padding_size)
+        self.config(width=740 - self.padding_size*2,
+                    height=300 - self.padding_size*2, bg=TRACK_LIST_COL)
         self._configure_grid()
 
-        self.display_frame, self.display_canvas = self.create_widgets()  # Create widgets and the frame to place items on.
+        # Create widgets and the frame to place items on.
+        self.display_frame, self.display_canvas = self.create_widgets()
 
         # Create displays
-        self.track_display = TracksDisplay(self.display_frame, self.display_canvas, self.music_database, self.track_list, self.mixer_controller, self.send_play_track_signal, self.send_add_to_queue_signal)
-        self.albums_display = AlbumsDisplay(self.display_frame, self.display_canvas, self.music_database, self.send_open_album_signal)
-        self.artist_display = ArtistsDisplay(self.display_frame, self.display_canvas, self.music_database, self.send_open_artist_page_signal)
-        self.queue_display = QueueDisplay(self.mixer_controller, self.music_database, self.display_canvas, self.display_frame, self.send_play_track_signal, self.send_add_to_queue_signal)
+        self.track_display = TracksDisplay(self.display_frame,
+                                           self.display_canvas,
+                                           self.music_database,
+                                           self.track_list,
+                                           self.mixer_controller,
+                                           self.send_play_track_signal,
+                                           self.send_add_to_queue_signal)
+        self.albums_display = AlbumsDisplay(self.display_frame,
+                                            self.display_canvas,
+                                            self.music_database,
+                                            self.send_open_album_signal)
+        self.artist_display = ArtistsDisplay(self.display_frame,
+                                             self.display_canvas,
+                                             self.music_database,
+                                             self.send_open_artist_page_signal)
+        self.queue_display = QueueDisplay(self.mixer_controller,
+                                          self.music_database,
+                                          self.display_canvas,
+                                          self.display_frame,
+                                          self.send_play_track_signal,
+                                          self.send_add_to_queue_signal)
 
         self.play_track_observers = [mixer_controller, play_bar_frame]
         self.open_album_observers = [self.track_list]
         self.open_artist_page_observers = [self.track_list]
-        self.add_to_queue_observers = [self.mixer_controller, self.queue_display]
+        self.add_to_queue_observers = [self.mixer_controller,
+                                       self.queue_display]
 
     def _configure_grid(self):
         self.grid_columnconfigure(0, weight=1)
@@ -62,15 +90,18 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
 
     def create_widgets(self):
         display_canvas = tk.Canvas(self)
-        scrollbar = tk.Scrollbar(self, orient="vertical", command=display_canvas.yview)
+        scrollbar = tk.Scrollbar(self, orient="vertical",
+                                 command=display_canvas.yview)
         display_frame = tk.Frame(display_canvas, bg=TRACK_LIST_COL)
         display_frame.grid_columnconfigure(0, weight=1)
         # <Configure> event triggers when the scrollable frame changes size.
         display_frame.bind("<Configure>", self._on_frame_configure)
         display_canvas.bind("<Configure>", self._on_canvas_configure)
-        display_canvas.configure(yscrollcommand=scrollbar.set, bg=TRACK_LIST_COL, highlightthickness=0)
+        display_canvas.configure(yscrollcommand=scrollbar.set,
+                                 bg=TRACK_LIST_COL, highlightthickness=0)
         display_canvas.grid(row=0, column=0, sticky="news")
-        display_canvas.create_window((0, 0), window=display_frame, anchor="nw", tags=["track frame"])
+        display_canvas.create_window((0, 0), window=display_frame,
+                                     anchor="nw", tags=["track frame"])
         display_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
         scrollbar.grid(row=0, column=1, sticky="news")
 
@@ -78,7 +109,9 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
 
     def _on_frame_configure(self, event):
         # Update scroll region to encompass the size of the scrollable_frame
-        self.display_canvas.configure(scrollregion=self.display_canvas.bbox("all"))
+        self.display_canvas.configure(
+            scrollregion=self.display_canvas.bbox("all")
+        )
 
     def _on_canvas_configure(self, event):
         # Update the width of the scrollable_frame to match the canvas width
@@ -123,7 +156,9 @@ class TrackListFrame(tk.Frame):  # Displays the list of music tracks in a frame
         """
         self.clear_display()
         self.queue_display.display_queue()
-        self.track_list.has_changed = False  # the tracklist is kept separate from the queue
+
+        # the tracklist is kept separate from the queue
+        self.track_list.has_changed = False
 
     def received_new_track_signal(self, track_id):
         """

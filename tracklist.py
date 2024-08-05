@@ -1,6 +1,9 @@
 from musicdatabase import MusicDatabase
 
 
+from durationformat import format_duration
+
+
 class TrackList:
     """
     Class to represent a list of tracks
@@ -12,29 +15,46 @@ class TrackList:
         self.tracklist = []
         self.has_changed = False
 
+        self.collection_type = None  # Maintains the type of collection being shown (Album, Artist, or all songs)
+        self.collection_title = ""  # Title of collection (Album title, artist name)
+        self.collection_id = None  # Database ID for the collection
+
     def get_collection(self, collection_type=None, collection_id=None):
         """
-        Gets a list of tracks belonging to a collection, which could be an artist's tracks, album, or playlist.
+        Gets a list of tracks belonging to a collection, which could
+        be an artist's tracks, album, or playlist.
+
         """
         if not collection_type:
             self.tracklist = self.music_database.get_all_tracks()
+            self.collection_type = "all songs"
+            self.collection_title = "All Songs"
         elif collection_type == "album":
             self.tracklist = self.music_database.get_album_tracklist(collection_id)
+            self.collection_title = self.music_database.get_album_title(collection_id)
+            self.collection_type = "album"
         elif collection_type == "artist":
             self.tracklist = self.music_database.get_artist_tracklist(collection_id)
+            self.collection_title = self.music_database.get_artist_name(collection_id)
+            self.collection_type = "artist"
         elif collection_type == "playlist":
-            pass
+            self.collection_type = "playlist"
+            self.collection_title = "Playlist"
         elif collection_type == "favourites":
+            self.collection_type = "favourites"
+            self.collection_title = "Favourites"
             pass
         else:
             print("Unrecognised collection type")
             pass
 
+        self.collection_id = collection_id
         self.send_tracklist_updated_signal()
 
     def send_tracklist_updated_signal(self):
         """
-        Sends a signal indicating that the list has been updated to any observing objects
+        Sends a signal indicating that the list has been updated to
+        any observing objects
         """
         for observer in self.tracklist_updated_observers:
             observer.received_tracklist_updated_signal()
@@ -53,7 +73,8 @@ class TrackList:
 
     def received_open_artist_page_signal(self, artist_id):
         """
-        Sets the tracklist to the list of songs attributed to the provided artist
+        Sets the tracklist to the list of songs attributed to the
+        provided artist
         """
         self.get_collection('artist', artist_id)
 
@@ -63,3 +84,8 @@ class TrackList:
         """
         return self.tracklist.copy()
 
+    def get_total_tracklist_duration(self):
+        metadata = self.music_database.get_track_metadata(self.tracklist)
+        durations = [metadata[track_id]["duration"] for track_id in self.tracklist]
+        formatted_duration = format_duration(sum(durations))
+        return formatted_duration

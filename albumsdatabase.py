@@ -7,6 +7,7 @@ class AlbumsDatabase:
     """
     Class responsible for handling operations with the albums database
     """
+
     def __init__(self, db_path, artist_database: ArtistsDatabase):
         self.db_path = db_path
         self.artist_database = artist_database
@@ -47,7 +48,7 @@ class AlbumsDatabase:
         AND artist_id = ?
         AND release_date = ?
         ''', (album_name, artist_id, release_date))
-        exists = cur.fetchone() is not None  # true if the album was found in the database
+        exists = cur.fetchone() is not None
         con.close()
         return exists
 
@@ -73,7 +74,14 @@ class AlbumsDatabase:
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         # Write query
-        cur.execute('SELECT album_id FROM albums WHERE album_name = ? AND release_date = ?', (album_name, release_date))
+        cur.execute(
+            '''SELECT album_id 
+            FROM albums
+            WHERE album_name = ?
+            AND release_date = ?
+            ''',
+            (album_name, release_date)
+        )
         album = cur.fetchone()
         con.close()
 
@@ -86,7 +94,12 @@ class AlbumsDatabase:
     def get_album_title(self, album_id):
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT album_name FROM albums WHERE album_id = ?', (album_id,))
+        cur.execute(
+            '''SELECT album_name
+            FROM albums
+            WHERE album_id = ?''',
+            (album_id,)
+        )
         album = cur.fetchone()
         con.close()
         album_name = album[0]
@@ -94,7 +107,8 @@ class AlbumsDatabase:
 
     def get_album_metadata(self, album_ids):
         """
-        Method used to get the album data corresponding to the provided album_ids
+        Method used to get the album data corresponding to the
+        provided album_ids
         """
         id_tuple = tuple(album_ids)
         expression = '(' + ','.join('?' for _ in id_tuple) + ')'
@@ -131,7 +145,12 @@ class AlbumsDatabase:
         """
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT album_id, album_name FROM albums ORDER BY album_name COLLATE NOCASE')
+        cur.execute(
+            '''SELECT album_id, album_name
+            FROM albums
+            ORDER BY album_name
+            COLLATE NOCASE'''
+        )
         album_rows = cur.fetchall()
         con.close()
 
@@ -146,7 +165,13 @@ class AlbumsDatabase:
         """
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
-        cur.execute('SELECT track_id FROM tracks WHERE album_id = ? ORDER BY track_number', (album_id,))
+        cur.execute(
+            '''SELECT track_id
+            FROM tracks
+            WHERE album_id = ? 
+            ORDER BY track_number''',
+            (album_id,)
+        )
         tracks_rows = cur.fetchall()
         con.close()
 

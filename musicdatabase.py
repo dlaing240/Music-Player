@@ -10,7 +10,9 @@ class MusicDatabase:
     def __init__(self, db_path):
         self.artist_database = ArtistsDatabase(db_path)
         self.albums_database = AlbumsDatabase(db_path, self.artist_database)
-        self.tracks_database = TrackDatabase(db_path, self.artist_database, self.albums_database)
+        self.tracks_database = TrackDatabase(db_path,
+                                             self.artist_database,
+                                             self.albums_database)
 
     def create_database(self):
         """
@@ -51,7 +53,9 @@ class MusicDatabase:
         """
         Checks whether the given album can be found in the database
         """
-        return self.albums_database.album_exists(album_name, artist, release_date)
+        return self.albums_database.album_exists(album_name,
+                                                 artist,
+                                                 release_date)
 
     def insert_album(self, album_name, artist, release_date):
         """
@@ -65,12 +69,13 @@ class MusicDatabase:
         """
         return self.albums_database.get_album_id(album_name, release_date)
 
-    def get_album_title(self, album_id):  # Redundant? Ideally use get metadata
+    def get_album_title(self, album_id):
         return self.albums_database.get_album_title(album_id)
 
     def get_album_metadata(self, album_ids):
         """
-        Method used to get the album data corresponding to the provided album_ids
+        Method used to get the album data corresponding to the provided
+        album_ids
         """
         return self.albums_database.get_album_metadata(album_ids)
 
@@ -94,15 +99,20 @@ class MusicDatabase:
 
     def track_is_duplicate(self, track_name, artist, album, release_date):
         """
-        Checks whether the track data matches a track that's already in the database
+        Checks whether the track data matches a track that's already in the
+        database
         """
-        return self.tracks_database.track_is_duplicate(track_name, artist, album, release_date)
+        return self.tracks_database.track_is_duplicate(track_name, artist,
+                                                       album, release_date)
 
-    def insert_track(self, track_name, artist, album, track_number, release_date, genre, duration, file_path):
+    def insert_track(self, track_name, artist, album, track_number,
+                     release_date, genre, duration, file_path):
         """
         Adds the track to the database
         """
-        self.tracks_database.insert_track(track_name, artist, album, track_number, release_date, genre, duration, file_path)
+        self.tracks_database.insert_track(track_name, artist, album,
+                                          track_number, release_date,
+                                          genre, duration, file_path)
 
     def get_all_tracks(self):
         """
@@ -112,7 +122,8 @@ class MusicDatabase:
 
     def get_track_metadata(self, id_list):
         """
-        Gets the database data corresponding to the tracks in the list of track_ids.
+        Gets the database data corresponding to the tracks in the
+        list of track_ids.
         """
         return self.tracks_database.get_track_metadata(id_list)
 
@@ -136,6 +147,13 @@ class MusicDatabase:
 
     def get_artist_metadata(self, artist_ids):
         """
-        Gets the database data corresponding to each artist in the given list of artist_ids
+        Gets the database data corresponding to each artist in the
+        given list of artist_ids
         """
         return self.artist_database.get_artist_metadata(artist_ids)
+
+    def get_artist_albumlist(self, artist_id):
+        """
+        Gets a list of albums by the artist
+        """
+        return self.artist_database.get_artist_albumlist(artist_id)
