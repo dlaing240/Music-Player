@@ -11,6 +11,7 @@ from playbarframe import PlayBarFrame
 from tracklist import TrackList
 from logo import Logo
 
+from tkinter import filedialog
 
 from paths import paths  # temporary
 
@@ -21,9 +22,10 @@ DIRECTORIES = paths
 class App:
     def __init__(self):
         database_path = "tracks.db"
+        directories_file = "directories.txt"
         self.music_database = MusicDatabase(database_path)
 
-        self.directory_scan = DirectoryScan(self.music_database, DIRECTORIES)
+        self.directory_scan = DirectoryScan(self.music_database, directories_file)
         self.track_list = TrackList(self.music_database)
 
         self.root = Root()  # Initialise Window
@@ -37,7 +39,8 @@ class App:
         self.header_frame = HeaderFrame(self.root, self.track_list,
                                         self.mixer_controller,
                                         self.music_database,
-                                        self.side_bar_frame)
+                                        self.side_bar_frame,
+                                        self.directory_scan)
         self.play_bar_frame = PlayBarFrame(self.root,
                                            self.mixer_controller,
                                            self.music_database)
@@ -46,7 +49,9 @@ class App:
                                                self.mixer_controller,
                                                self.play_bar_frame,
                                                self.track_list,
-                                               self.side_bar_frame)
+                                               self.side_bar_frame,
+                                               self.directory_scan,
+                                               self.header_frame)
         self.logo = Logo(self.root)
         self.logo.grid(row=0, column=0, padx=2, pady=2, sticky="news")
 

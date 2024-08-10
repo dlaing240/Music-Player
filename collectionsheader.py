@@ -39,8 +39,6 @@ class CollectionsHeader(tk.Frame):
     def _grid_config(self):
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
-        # self.grid_columnconfigure(0, weight=1)
-        # self.grid_columnconfigure(1, weight=1)
 
     def create_general_widgets(self):
         if self.collection_type == "album":
@@ -78,6 +76,9 @@ class CollectionsHeader(tk.Frame):
                                     text=f"{self.track_count} songs",
                                     bg=HEADER_COL, fg="white",
                                     font=("Arial", 12, "bold"))
+        if self.track_count == 1:
+            track_count_text.config(text="1 song")
+            
         track_count_text.grid(row=1, column=2, sticky="w", padx=10)
 
         duration_text = tk.Label(self,

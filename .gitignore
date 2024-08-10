@@ -2,6 +2,8 @@ paths.py
 IGNOREtestwidgets.py
 IGNOREplaydemo.py
 tracks.db
+bouncingballsdisplay.py
+directories.txt
 
 # Template
 # Byte-compiled / optimized / DLL files

@@ -21,6 +21,13 @@ class AlbumItem(tk.Frame):
         self.configure(bg=colour_scheme["dark"])
 
     def _create_widgets(self):
+        """
+        Creates the album widgets
+
+        Returns
+        -------
+
+        """
         tk.Label(
             self,
             text=self.album_name,
@@ -57,5 +64,3 @@ class AlbumItem(tk.Frame):
             column=0,
             rowspan=2,
             padx=20)
-
-

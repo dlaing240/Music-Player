@@ -1,6 +1,7 @@
 from artistsdatabase import ArtistsDatabase
 from albumsdatabase import AlbumsDatabase
 from trackdatabase import TrackDatabase
+from playlistsdatabase import PlaylistDatabase
 
 
 class MusicDatabase:
@@ -10,9 +11,11 @@ class MusicDatabase:
     def __init__(self, db_path):
         self.artist_database = ArtistsDatabase(db_path)
         self.albums_database = AlbumsDatabase(db_path, self.artist_database)
+        self.playlist_database = PlaylistDatabase(db_path)
         self.tracks_database = TrackDatabase(db_path,
                                              self.artist_database,
-                                             self.albums_database)
+                                             self.albums_database,
+                                             self.playlist_database)
 
     def create_database(self):
         """
@@ -21,6 +24,7 @@ class MusicDatabase:
         self.artist_database.create_database()
         self.albums_database.create_database()
         self.tracks_database.create_database()
+        self.playlist_database.create_tables()
 
     def artist_exists(self, artist_name):
         """
@@ -157,3 +161,84 @@ class MusicDatabase:
         Gets a list of albums by the artist
         """
         return self.artist_database.get_artist_albumlist(artist_id)
+
+    def create_playlist(self, playlist_name):
+        return self.playlist_database.create_playlist(playlist_name)
+
+    def add_to_playlist(self, track_id, playlist_id):
+        return self.playlist_database.add_to_playlist(track_id, playlist_id)
+
+    def remove_from_playlist(self, track_id, playlist_id):
+        return self.playlist_database.remove_from_playlist(track_id, playlist_id)
+
+    def get_playlist_tracks(self, playlist_id):
+        return self.playlist_database.get_playlist_tracks(playlist_id)
+
+    def get_playlists(self):
+        return self.playlist_database.get_playlists()
+
+    def get_playlist_name(self, playlist_id):
+        return self.playlist_database.get_playlist_name(playlist_id)
+
+    def get_all_paths(self):
+        """
+        Returns all the file paths in the database
+
+        Returns
+        -------
+
+        """
+        return self.tracks_database.get_all_paths()
+
+    def remove_by_paths(self, file_paths):
+        """
+        Removes the database entry corresponding to the file_path given
+
+        Parameters
+        ----------
+        file_paths
+
+        Returns
+        -------
+
+        """
+        return self.tracks_database.remove_by_paths(file_paths)
+
+    def delete_playlist(self, playlist_id):
+        """
+        Deletes the playlist from the database
+
+        Parameters
+        ----------
+        playlist_id
+
+        Returns
+        -------
+
+        """
+        return self.playlist_database.delete_playlist(playlist_id)
+
+    def swap_positions(self, playlist_id, pos_1, pos_2):
+        """
+        Swaps the positions of two tracks in a playlist
+
+        Parameters
+        ----------
+        playlist_id
+        pos_1
+        pos_2
+
+        Returns
+        -------
+
+        """
+        return self.playlist_database.swap_positions(playlist_id, pos_1, pos_2)
+
+    def get_track_pos(self, playlist_id, track_id):
+        return self.playlist_database.get_track_pos(playlist_id, track_id)
+
+    def get_min_pos(self, playlist_id):
+        return self.playlist_database.get_min_pos(playlist_id)
+
+    def get_max_pos(self, playlist_id):
+        return self.playlist_database.get_max_pos(playlist_id)

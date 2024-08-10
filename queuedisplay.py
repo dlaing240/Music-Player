@@ -1,134 +1,273 @@
 import tkinter as tk
-from functools import partial
+import numpy as np
 
-from mixercontroller import MixerController
-from musicdatabase import MusicDatabase
-from queueitem import QueueItem
-from durationformat import format_duration
+from tracksdisplay import TracksDisplay
+
+from root import colour_scheme, BATTLESHIP_GREY, BUTTON_COL, CHILI_RED
 
 
-class QueueDisplay:
-    def __init__(self, mixer_controller: MixerController,
-                 music_database: MusicDatabase, display_canvas,
-                 display_frame, play_track_function, add_to_queue_function):
-        self.mixer_controller = mixer_controller
-        self.music_database = music_database
-        self.display_canvas = display_canvas
-        self.display_frame = display_frame
-        self.play_track_function = play_track_function
-        self.add_to_queue_function = add_to_queue_function
+class QueueDisplay(TracksDisplay):
+    def __init__(self, display_frame, display_canvas, music_database,
+                 track_list, mixer_controller, play_track_function,
+                 add_to_queue_function, play_next_function):
+        super().__init__(display_frame, display_canvas, music_database,
+                         track_list, mixer_controller, play_track_function,
+                         add_to_queue_function, play_next_function)
+        self.pos_to_item = {}  # Maps queue positions to the track items that occupy that position
+        self.max_queue_index = 0
+        self.empty_queue = None
 
-        self.highlighted_track = None
-        self.queue_items_dict = {}
-        self.queue_index = 0
-        self.queue_id = 0
-        self.max_queue_index = len(self.mixer_controller.active_queue) - 1
-        self.is_displayed = False
+        # Overwrite the play function to one based on queue position
+        self.play_track_function = self.mixer_controller.go_to_pos
 
-    def display_queue(self):
-        self.clear_display()
-        queue = self.mixer_controller.active_queue
-        self.max_queue_index = len(queue) - 1
-        tracks_info = self.music_database.get_track_metadata(queue)
-        self.queue_index = 0
+    def get_current_track_pos(self):
+        """
+        Returns the queue position of the current track
+        """
+        return self.mixer_controller.pos_in_queue
 
-        for track_id in queue:
-            track_info = tracks_info[track_id]
-            self.create_queue_item(track_id, track_info,
-                                   self.queue_index, self.max_queue_index)
-            self.queue_index += 1
-            if track_id == self.mixer_controller.current_track_id:
-                self.update_highlighted_track()
+    # overwrite get_widget_ids to use position for ids.
+    def get_widget_ids(self, tracks):
+        """
+        Returns an array of queue indices to use as widget_ids.
+        """
+        start = 0
+        end = len(tracks)
+        widget_ids = np.arange(start, end, step=1)
+        return widget_ids
 
-        self.display_canvas.yview_moveto(0)
-        self.is_displayed = True
-
-    def create_queue_item(self, track_id, track_info, queue_index, queue_max):
-        track_name = track_info['track_name']
-        artist_id = track_info['artist']
-        artist_name = self.music_database.get_artist_name(artist_id)
-        album_id = track_info['album']
-        album = self.music_database.get_album_title(album_id)
-        duration_full = track_info['duration']
-        duration = format_duration(duration_full)
-        release_date = track_info['release_date']
-        # Pass the play button command to the QueueItem
-        play_command = partial(self.play_track_function, track_id)
-        add_to_queue_command = partial(self.add_to_queue_function, track_id)
-
-        queue_item = QueueItem(
-            self.display_frame,
-            play_command=play_command,
-            track_name=track_name,
-            artist_name=artist_name,
-            artist_id=artist_id,
-            album=album,
-            album_id=album_id,
-            release_date=release_date,
-            track_number=queue_index + 1,
-            duration=duration,
-            queue_index=queue_index,
-            reorder_queue_function=self.reorder_queue,
-            track_id=track_id,
-            queue_max=queue_max,
-            add_to_queue_command=add_to_queue_command
-        )
-        queue_item.grid(row=queue_index, column=0,
-                        sticky="news", pady=5, padx=10)
-
-        self.queue_items_dict[self.queue_index] = queue_item
-
-    def reorder_queue(self, old_index, new_index, track_id):
-        # Reorder the mixer queue
-        self.mixer_controller.reorder_queue(old_index, new_index, track_id)
-        moved_item = self.queue_items_dict[old_index]  # The item to be moved
-        replacement_item = self.queue_items_dict[new_index]  # The item currently in the target position
-        # swap keys in the dictionary
-        self.queue_items_dict[new_index] = moved_item
-        self.queue_items_dict[old_index] = replacement_item
-
-        # Change the moved items' rows
-        moved_item.grid(row=new_index, column=0,
-                        sticky="news", pady=5, padx=10)
-        replacement_item.grid(row=old_index, column=0,
-                              sticky="news", pady=5, padx=10)
-        replacement_item.queue_index = old_index
-        replacement_item.update_track_number()
-
-        if moved_item.is_highlighted:
-            self.highlighted_track = new_index
-        elif replacement_item.is_highlighted:
-            self.highlighted_track = old_index
+    # Overwrite the get_tracks method
+    def get_tracks(self):
+        """
+        Returns the list of tracks in the current queue
+        """
+        tracks = self.mixer_controller.active_queue
+        self.max_queue_index = len(tracks) - 1
+        return tracks
 
     def clear_display(self):
         """
-        Removes all widgets on the current display
+        Destroys all the displayed widgets
         """
-        for track_item_id in self.queue_items_dict:
-            self.queue_items_dict[track_item_id].destroy()
+        for pos in self.pos_to_item:
+            self.pos_to_item[pos].destroy()
 
-        self.queue_items_dict = {}
+        self.pos_to_item = {}
+        self.all_track_widgets = []
 
-    def update_highlighted_track(self):
+        if self.empty_queue:
+            self.empty_queue.destroy()
+            self.empty_queue = None
+
+        self.highlighted_track = None
+
+    def display_queue(self):
         """
-        Updates the currently highlighted track
+        Creates and displays the queue display
         """
-        # First, check if the previously highlighted track needs the highlight removed
-        # as it may have already been destroyed
-        if (self.highlighted_track is not None
-                and self.highlighted_track in self.queue_items_dict):
-            track_widget = self.queue_items_dict[self.highlighted_track]
-            track_widget.remove_highlight()
+        # Modify the start column because move up/down buttons will go in column 0
+        self.start_column = 1
+        super().display_tracklist()
 
-        # The dictionary of queue items uses the track's position in the queue as its key
-        currently_playing_pos = self.mixer_controller.pos_in_queue
+        # Call method to create widgets specific to the queue display
+        self.create_buttons()
 
-        # Update the new track if it's currently being displayed
-        if (self.queue_items_dict
-                and currently_playing_pos in self.queue_items_dict):
-            track_to_highlight = self.queue_items_dict[currently_playing_pos]
-            track_to_highlight.add_highlight()
-            self.highlighted_track = currently_playing_pos
+        self.update_highlighted_track(None)
+
+    def on_play_press(self, track_item):
+        """
+        Method called when the track_item's play button is pressed
+        """
+        queue_pos = self.get_item_pos(track_item)
+        self.play_track_function(queue_pos)
+
+    def get_item_pos(self, item):
+        """
+        Returns the queue position of the item
+        """
+        return item.grid_info()['row']
+
+    def create_buttons(self):
+        """
+        Creates the specific queue display buttons for each track
+        """
+
+        for track_item in self.all_track_widgets:
+            # Get the position of the track in the queue
+            track_pos = self.get_item_pos(track_item)
+            self.pos_to_item[track_pos] = track_item
+
+            self.create_move_buttons(track_item)
+            self.create_remove_button(track_item)
+
+    def create_remove_button(self, track_item):
+        """
+        Creates the button to remove this track from the queue
+        """
+        remove_button = tk.Button(track_item,
+                                  text="❌",
+                                  command=lambda t=track_item: self.remove_track_function(t),
+                                  bg=colour_scheme["dark"],
+                                  fg=CHILI_RED,
+                                  relief="flat",
+                                  font=("Arial", 18))
+        remove_button.grid(row=0, column=6,
+                           rowspan=2, padx=20)
+
+        track_item.track_widgets.append(remove_button)
+
+    def remove_track_function(self, track_item):
+        """
+        Removes this track from the queue and the display
+        """
+        pos = self.get_item_pos(track_item)
+        # remove track from the queue
+        self.mixer_controller.remove_from_queue(pos)
+
+        # destroy the widget (and remove highlight reference if necessary)
+        widget = self.pos_to_item[pos]
+        if widget is self.highlighted_track:
+            self.highlighted_track = None
+        widget.destroy()
+        self.pos_to_item.pop(pos)
+
+        # update the rest of the positions
+        for position in range(pos + 1, len(self.pos_to_item)):
+            item = self.pos_to_item[position]
+            new_pos = position - 1
+            self.pos_to_item[new_pos] = item
+            # update the widget
+            item.track_number_widget.config(text=f"{new_pos+1}")
+            item.grid_configure(row=new_pos)
+
+    def create_move_buttons(self, track_item):
+        """
+        Creates the buttons to change the position of this track
+
+        Parameters
+        ----------
+        track_item
+
+        Returns
+        -------
+
+        """
+        # Add buttons to the track items
+        move_up_button = tk.Button(track_item, text="⬆️",
+                                   command=lambda t=track_item: self.move_up(t),
+                                   width=4, bg=colour_scheme["dark"], fg=BUTTON_COL)
+        move_up_button.grid(row=0, column=0)
+        move_down_button = tk.Button(track_item, text="⬇️",
+                                     command=lambda t=track_item: self.move_down(t),
+                                     width=4, bg=colour_scheme["dark"], fg=BUTTON_COL)
+        move_down_button.grid(row=1, column=0)
+
+        track_item.track_widgets.extend([move_down_button, move_up_button])
+
+    def move_up(self, track_item):
+        """
+        Moves the track up in the queue
+
+        Parameters
+        ----------
+        track_item
+
+        Returns
+        -------
+
+        """
+        track_pos = self.get_item_pos(track_item)
+        old_index = track_pos
+        new_index = old_index - 1
+        if new_index < 0:
+            new_index = 0
+
+        if old_index != new_index:
+            self.swap_items(old_index, new_index)
+
+    def move_down(self, track_item):
+        """
+        Moves the track down in the queue
+
+        Parameters
+        ----------
+        track_item
+
+        Returns
+        -------
+
+        """
+        track_pos = self.get_item_pos(track_item)
+        old_index = track_pos
+        new_index = old_index + 1
+        if new_index >= self.max_queue_index:
+            new_index = self.max_queue_index
+
+        if old_index != new_index:
+            self.swap_items(old_index, new_index)
+
+    def swap_items(self, old_index, new_index):
+        """
+        Swaps the positions of the tracks at these indices
+
+        Parameters
+        ----------
+        old_index
+        new_index
+
+        Returns
+        -------
+
+        """
+        moved_item = self.pos_to_item[old_index]
+        swapped_item = self.pos_to_item[new_index]
+
+        # Swap item positions in the dictionaries
+        self.pos_to_item[new_index] = moved_item
+        self.pos_to_item[old_index] = swapped_item
+
+        # Swap the widgets' rows and update their labels
+        old_row = moved_item.grid_info()['row']
+        new_row = swapped_item.grid_info()['row']
+        moved_item.grid_configure(row=new_row)
+        swapped_item.grid_configure(row=old_row)
+        moved_item.track_number_widget.config(text=new_index + 1)
+        swapped_item.track_number_widget.config(text=old_index + 1)
+
+        # Update the mixer queue
+        self.mixer_controller.reorder_queue(old_index, new_index)
+
+    def empty_tracklist(self):
+        """
+        Displays the screen shown when the queue is empty
+        """
+        self.empty_queue = tk.Label(
+            self.display_frame,
+            text="You are currently listening to: Silence",
+            bg=colour_scheme["grey"],
+            fg=BATTLESHIP_GREY,
+            font=("Arial", 20),
+        )
+        self.empty_queue.grid(row=0, column=0, sticky="news")
 
     def received_add_to_queue_signal(self, track_id):
         pass
+
+    def update_highlighted_track(self, track_id):
+        """
+        Updates the highlighted track
+
+
+        Parameters
+        ----------
+        track_id
+
+        """
+        pos = self.get_current_track_pos()  # widget_id of track that's currently playing
+        if self.highlighted_track is not None:
+            self.highlighted_track.remove_highlight()
+
+        if self.pos_to_item and pos in self.pos_to_item:
+            item = self.pos_to_item[pos]
+            item.add_highlight()
+            self.highlighted_track = item

@@ -2,15 +2,18 @@ import sqlite3
 
 from artistsdatabase import ArtistsDatabase
 from albumsdatabase import AlbumsDatabase
+from playlistsdatabase import PlaylistDatabase
 
 
 class TrackDatabase:
     def __init__(self, db_path,
                  artist_database: ArtistsDatabase,
-                 albums_database: AlbumsDatabase):
+                 albums_database: AlbumsDatabase,
+                 playlist_database: PlaylistDatabase):
         self.db_path = db_path
         self.artist_database = artist_database
         self.albums_database = albums_database
+        self.playlist_database = playlist_database
         self.create_database()
 
     def create_database(self):
@@ -183,3 +186,57 @@ class TrackDatabase:
         duration = cur.fetchone()[0]
         con.close()
         return duration
+
+    def get_all_paths(self):
+        """
+        Returns all the file paths in the database
+
+        Returns
+        -------
+
+        """
+        con = sqlite3.connect(self.db_path)
+        cur = con.cursor()
+        cur.execute('''
+            SELECT file_path FROM tracks
+        ''')
+        path_rows = cur.fetchall()
+
+        paths = [row[0] for row in path_rows]
+        return paths
+
+    def remove_by_paths(self, file_paths):
+        """
+        Removes the database entry corresponding to the file_path given
+
+        Parameters
+        ----------
+        file_paths
+
+        Returns
+        -------
+
+        """
+
+        con = sqlite3.connect(self.db_path)
+        cur = con.cursor()
+
+        track_ids = []
+
+        for file_path in file_paths:
+            cur.execute('''
+            SELECT track_id
+            FROM tracks
+            WHERE file_path = ?
+            ''', (file_path,))
+            track_id = cur.fetchone()[0]
+            track_ids.append(track_id)
+
+            cur.execute('''
+            DELETE FROM tracks WHERE file_path = ?
+            ''', (file_path,))
+
+        con.commit()
+        con.close()
+        for track_id in track_ids:
+            self.playlist_database.remove_from_all(track_id)

@@ -23,14 +23,14 @@ class AlbumsDatabase:
         cur = con.cursor()
         # Albums database
         cur.execute('''
-                CREATE TABLE IF NOT EXISTS albums (
-                    album_id INTEGER PRIMARY KEY,
-                    album_name TEXT NOT NULL,
-                    release_date TEXT NOT NULL,
-                    artist_id INTEGER NOT NULL,
-                    FOREIGN KEY(artist_id) REFERENCES artists(artist_id)
-                )
-                ''')
+            CREATE TABLE IF NOT EXISTS albums (
+                album_id INTEGER PRIMARY KEY,
+                album_name TEXT NOT NULL,
+                release_date TEXT NOT NULL,
+                artist_id INTEGER NOT NULL,
+                FOREIGN KEY(artist_id) REFERENCES artists(artist_id)
+            )
+        ''')
         con.commit()
         con.close()
 

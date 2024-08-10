@@ -6,10 +6,6 @@ from tracklist import TrackList
 from root import colour_scheme
 
 
-# HEADER_COL = "#F6F7EB"
-# SIDE_BAR_COL = "#F6F7EB"
-
-
 SIDE_BAR_COL = colour_scheme["grey"]
 
 
@@ -35,6 +31,8 @@ class SideBarFrame(tk.Frame):
         self.open_album_list_observers = []
         self.open_artist_list_observers = []
         self.open_queue_observers = []
+        self.open_playlist_observers = []
+        self.open_directories_observers = []
 
         self._grid_config()
 
@@ -47,7 +45,7 @@ class SideBarFrame(tk.Frame):
             text="⏭️ Up Next",
             font=("Ariel", 16),
             command=self.send_open_queue_signal,
-            width=10,
+            width=11,
             fg="white",
             bg=colour_scheme["grey"],
             highlightthickness=0,
@@ -59,7 +57,7 @@ class SideBarFrame(tk.Frame):
             text="🎵 Songs",
             font=("Ariel", 16),
             command=self.send_open_song_list_signal,
-            width=10,
+            width=11,
             fg="white",
             bg=colour_scheme["grey"],
             highlightthickness=0,
@@ -71,7 +69,7 @@ class SideBarFrame(tk.Frame):
             text="💿 Albums",
             font=("Ariel", 16),
             command=self.send_open_album_list_signal,
-            width=10,
+            width=11,
             fg="white",
             bg=colour_scheme["grey"],
             highlightthickness=0,
@@ -83,7 +81,7 @@ class SideBarFrame(tk.Frame):
             text="👤 Artists",
             font=("Ariel", 16),
             command=self.send_open_artist_list_signal,
-            width=10,
+            width=11,
             fg="white",
             bg=colour_scheme["grey"],
             highlightthickness=0,
@@ -94,8 +92,8 @@ class SideBarFrame(tk.Frame):
             self,
             text="📂 Playlists",
             font=("Ariel", 16),
-            command=self.send_open_playlist_signal,
-            width=10,
+            command=self.send_open_playlists_signal,
+            width=11,
             fg="white",
             bg=colour_scheme["grey"],
             highlightthickness=0,
@@ -103,11 +101,25 @@ class SideBarFrame(tk.Frame):
             anchor="w"
         ).grid(row=4, column=0, padx=10, pady=5)
 
-    def send_open_playlist_signal(self):
+        tk.Button(
+            self,
+            text="➕ Add Music",
+            font=("Ariel", 16),
+            command=self.send_open_directories_signal,
+            width=11,
+            fg="white",
+            bg=colour_scheme["grey"],
+            highlightthickness=0,
+            relief="flat",
+            anchor="w"
+        ).grid(row=5, column=0, padx=10, pady=5)
+
+    def send_open_playlists_signal(self):
         """
         Signals to any observers that the 'playlists' button has been pressed
         """
-        print("Open playlist list")
+        for observer in self.open_playlist_observers:
+            observer.received_open_playlists_signal()
 
     def send_open_song_list_signal(self):
         """
@@ -138,3 +150,7 @@ class SideBarFrame(tk.Frame):
         """
         for observer in self.open_queue_observers:
             observer.received_open_queue_signal()
+
+    def send_open_directories_signal(self):
+        for observer in self.open_directories_observers:
+            observer.received_open_directories_signal()

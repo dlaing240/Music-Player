@@ -1,5 +1,7 @@
 import tkinter as tk
+from functools import partial
 
+from trackmenu import TrackMenu
 from root import BUTTON_COL, colour_scheme, EMERALD, BATTLESHIP_GREY, MUNSELL
 
 TRACK_LIST_COL = colour_scheme["dark"]
@@ -10,14 +12,22 @@ class TrackItem(tk.Frame):
     """
     Class to provide a custom widget for displaying tracks
     """
-    def __init__(self, parent, play_command, track_name,
-                 artist_name, artist_id, album,
-                 album_id, release_date, track_number,
-                 duration, add_to_queue_command, start_column=0):
+    def __init__(self, parent, play_command, track_id, track_name,
+                 artist_name, artist_id, album, album_id,
+                 release_date, track_number, duration,
+                 add_to_queue_command, play_next_command,
+                 add_to_playlist_command, playlists,
+                 create_new_playlist_command, start_column=0):
         super().__init__(parent)
         self.parent = parent
         self.play_command = play_command
+        self.track_id = track_id
         self.add_to_queue_command = add_to_queue_command
+        self.play_next_command = play_next_command
+
+        self.add_to_playlist_command = add_to_playlist_command
+        self.playlists = playlists  # List of (playlist_id, playlist_name) tuples
+        self.create_new_playlist_command = create_new_playlist_command
 
         # track info
         self.track_name = track_name
@@ -26,24 +36,35 @@ class TrackItem(tk.Frame):
         self.album = album
         self.album_id = album_id
         self.release_date = release_date
-        self.config(bg=TRACK_LIST_COL, width=630,
-                    height=30, highlightbackground=EMERALD)
-        self.track_number = track_number
         self.duration = duration
-        self.is_highlighted = False
 
+        # Widget info
+        self.track_number = track_number
+        self.is_highlighted = False
         self.start_column = start_column
         widgets = self._create_widgets()
         self.play_track_button = widgets[0]
-        self.track_widgets = widgets[1:]
+        self.track_widgets = [widget for widget in widgets[1:]]
+        self.track_number_widget = widgets[3]
+        self.menu_button = self.create_menu_button()
+
+        self.config(bg=TRACK_LIST_COL, width=630,
+                    height=30, highlightbackground=EMERALD)
 
     def _create_widgets(self):
+        """
+        Creates the track frame widgets
+
+        Returns
+        -------
+
+        """
         number = tk.Label(self, text=f"{self.track_number}",
                           bg=TRACK_LIST_COL, fg="white",
                           font=("Arial", 10), width=3)
         number.grid(row=0, column=self.start_column, rowspan=2, padx=0)
         button = tk.Button(self, text="▶", bg=BUTTON_COL,
-                           command=self.play_command, width=3)
+                           command=lambda: self.play_command(self), width=3)
         button.grid(row=0, column=self.start_column+1, rowspan=2, padx=20)
         title = tk.Label(self, text=self.track_name, bg=TRACK_LIST_COL,
                          fg="white", font=("Arial", 11), anchor='w', width=23)
@@ -60,31 +81,39 @@ class TrackItem(tk.Frame):
         duration_label = tk.Label(self, text=self.duration,
                                   bg=TRACK_LIST_COL, fg="white",
                                   font=("Arial", 8))
-        duration_label.grid(row=0, column=self.start_column+4,
+        duration_label.grid(row=0, column=self.start_column+5,
                             rowspan=2, padx=10)
 
-        play_next_button = tk.Button(self, text="⏭️",
-                                     bg=TRACK_LIST_COL, fg="white",
-                                     relief="flat", font=("Arial", 16))
-        play_next_button.grid(row=0, column=self.start_column+5, rowspan=2)
+        return button, title, artist, number, album_label, duration_label
 
-        add_to_queue_button = tk.Button(self, text="📋",
-                                        bg=TRACK_LIST_COL,
-                                        fg="white", relief="flat",
-                                        font=("Arial", 16),
-                                        command=self.add_to_queue_command)
-        add_to_queue_button.grid(row=0, column=self.start_column+6, rowspan=2)
+    def create_menu_button(self):
+        """
+        Creates the menu button and menu options
 
-        add_to_playlist_button = tk.Button(self, text="➕",
-                                           bg=TRACK_LIST_COL,
-                                           fg="white", relief="flat",
-                                           font=("Arial", 16))
-        add_to_playlist_button.grid(row=0,
-                                    column=self.start_column+7,
-                                    rowspan=2)
 
-        return (button, title, artist, number, album_label, duration_label,
-                add_to_queue_button, add_to_playlist_button, play_next_button)
+        Returns
+        -------
+
+        """
+        menu_button = tk.Button(self, text="⚫\n⚫\n⚫",
+                                bg=TRACK_LIST_COL,
+                                fg="white",
+                                font=("Arial", 6),
+                                width=4,
+                                relief="flat",
+                                highlightthickness=0,
+                                borderwidth=0)
+        menu_button.grid(row=0, column=self.start_column + 4,
+                         rowspan=2, padx=10)
+
+        track_menu = TrackMenu(self, self.play_next_command,
+                               self.add_to_queue_command,
+                               self.add_to_playlist_command,
+                               self.playlists,
+                               self.create_new_playlist_command)
+
+        menu_button.bind("<Button-1>", track_menu.show_menu)
+        return menu_button
 
     def add_highlight(self):
         """
@@ -94,6 +123,7 @@ class TrackItem(tk.Frame):
         for widget in self.track_widgets:
             widget.config(bg=MUNSELL)
         self.play_track_button.config(bg=MUNSELL)
+        self.menu_button.config(bg=MUNSELL)
 
         self.is_highlighted = True
 
@@ -105,5 +135,6 @@ class TrackItem(tk.Frame):
         for widget in self.track_widgets:
             widget.config(bg=TRACK_LIST_COL)
         self.play_track_button.config(bg=BUTTON_COL)
+        self.menu_button.config(bg=colour_scheme["dark"])
 
         self.is_highlighted = False

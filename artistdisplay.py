@@ -5,6 +5,9 @@ from musicdatabase import MusicDatabase
 
 
 class ArtistsDisplay:
+    """
+    Class for displaying the list of artists
+    """
     def __init__(self, display_frame, display_canvas,
                  music_database: MusicDatabase, open_artist_command):
         self.display_frame = display_frame

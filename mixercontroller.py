@@ -307,21 +307,56 @@ class MixerController:
         """
         random.shuffle(self.active_queue)
 
-    def reorder_queue(self, old_index, new_index, track_id):
-        self.active_queue.pop(old_index)
+    def reorder_queue(self, old_index, new_index):
+        """
+        Swaps the positions of the tracks at old_index and new_index
+        """
+        track_id = self.active_queue.pop(old_index)
         self.active_queue.insert(new_index, track_id)
         self.pos_in_queue = self.active_queue.index(self.current_track_id)
         self.load_next_song()
 
     def received_add_to_queue_signal(self, track_id):
+        """
+        Adds a track to the end of the queue
+        """
         self.active_queue.append(track_id)
         self.raw_queue_list.append(track_id)
         self.load_next_song()  # Queue has changed
 
+    def received_play_next_signal(self, track_id):
+        """
+        Prepares a track to be played after the current song
+        """
+        self.active_queue.insert(self.pos_in_queue+1, track_id)
+        self.raw_queue_list.insert(self.pos_in_queue+1, track_id)
+        self.load_next_song()
+
     def play_all(self):
         """
-        Plays all songs in the current tracklist, starting with the first.
+        Plays all songs in the current tracklist
         """
         self.update_queue()  # Update the queue to match the tracklist
         # Start playing the first track in the queue
+        self.pos_in_queue = 0
         self.play_track(self.active_queue[0])
+
+    def go_to_pos(self, pos):
+        """
+        Starts playing the track at this position in the queue
+        """
+        track = self.active_queue[pos]
+        self.pos_in_queue = pos
+        self.play_track(track)
+
+    def remove_from_queue(self, pos):
+        """
+        Removes the track in this position from the queue.
+        """
+        self.active_queue.pop(pos)
+
+        if pos == self.pos_in_queue + 1:
+            self.load_next_song()
+        elif pos == self.pos_in_queue:
+            self.pos_in_queue -= 1
+            self.load_next_song()

@@ -8,6 +8,8 @@ from mixercontroller import MixerController
 from musicdatabase import MusicDatabase
 from listheader import ListHeader
 from sidebarframe import SideBarFrame
+from playlistheader import PlaylistsHeader
+from directoriesheader import DirectoriesHeader, DirectoryScan
 
 
 HEADER_COL = colour_scheme["grey"]
@@ -21,19 +23,25 @@ class HeaderFrame(tk.Frame):
                  tracklist: TrackList,
                  mixer_controller: MixerController,
                  music_database: MusicDatabase,
-                 sidebarframe: SideBarFrame):
+                 sidebarframe: SideBarFrame,
+                 directory_scan: DirectoryScan):
         super().__init__(parent)
         self.parent = parent
         self.tracklist = tracklist
         self.mixer_controller = mixer_controller
         self.music_database = music_database
         self.sidebarframe = sidebarframe
+        self.directory_scan = directory_scan
 
         # listen for updates to the display
         self.tracklist.tracklist_updated_observers.append(self)
         self.sidebarframe.open_artist_list_observers.append(self)
         self.sidebarframe.open_album_list_observers.append(self)
         self.sidebarframe.open_queue_observers.append(self)
+        self.sidebarframe.open_playlist_observers.append(self)
+        self.sidebarframe.open_directories_observers.append(self)
+
+        self.update_playlist_display_observers = []
 
         self.padding_size = self.parent.padding_size
         self.grid(row=0, column=1, sticky="news",
@@ -99,3 +107,41 @@ class HeaderFrame(tk.Frame):
         queue_header.grid(row=0, column=0, sticky="news")
         self.current_header = queue_header
 
+    def received_open_playlists_signal(self):
+        self.current_header.destroy()
+        playlists_header = PlaylistsHeader(
+            self, self.playlist_header_command
+        )
+        playlists_header.grid(row=0, column=0, sticky="news")
+        self.current_header = playlists_header
+
+    def playlist_header_command(self, playlist_name):
+        """
+        Method used to create a playlist via a button on the
+        playlist header frame
+
+        Parameters
+        ----------
+        playlist_name
+
+        Returns
+        -------
+
+        """
+        self.music_database.create_playlist(playlist_name)
+        self.sidebarframe.send_open_playlists_signal()
+
+    def received_open_directories_signal(self):
+        """
+        Method to display the directories header
+
+        Returns
+        -------
+
+        """
+        self.current_header.destroy()
+        directories_header = DirectoriesHeader(
+            self, self.directory_scan
+        )
+        directories_header.grid(row=0, column=0, sticky="news")
+        self.current_header = directories_header

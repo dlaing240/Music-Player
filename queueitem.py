@@ -13,12 +13,15 @@ class QueueItem(TrackItem):
     def __init__(self, parent, play_command, track_name, artist_name,
                  artist_id, album, album_id, release_date, track_number,
                  duration, queue_index, reorder_queue_function, track_id,
-                 queue_max, add_to_queue_command):
+                 queue_max, add_to_queue_command, play_next_command,
+                 add_to_playlist_command, playlists, create_new_playlist_command,):
         super().__init__(parent, play_command, track_name,
                          artist_name, artist_id, album,
                          album_id, release_date, track_number,
-                         duration, add_to_queue_command, start_column=1)
-
+                         duration, add_to_queue_command,
+                         play_next_command, add_to_playlist_command,
+                         playlists, create_new_playlist_command,
+                         start_column=1)
         self.queue_index = queue_index
         self.queue_max = queue_max
         self.reorder_queue_function = reorder_queue_function
