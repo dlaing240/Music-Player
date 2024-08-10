@@ -2,7 +2,7 @@ import tkinter as tk
 from functools import partial
 
 from tracksdisplay import TracksDisplay
-from root import colour_scheme, CHILI_RED, BUTTON_COL
+from root import colour_scheme, CHILI_RED, BUTTON_COL, MUNSELL
 
 
 class PlaylistDisplay(TracksDisplay):
@@ -52,6 +52,9 @@ class PlaylistDisplay(TracksDisplay):
                            rowspan=2, padx=20)
 
         track_item.track_widgets.append(remove_button)
+
+        if track_id == self.highlighted_track:
+            remove_button.config(bg=MUNSELL)
 
         self.remove_buttons[track_id] = remove_button
 

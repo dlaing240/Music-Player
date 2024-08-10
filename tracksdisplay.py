@@ -162,6 +162,7 @@ class TracksDisplay:
         for widget in self.empty_display_widgets:
             widget.destroy()
         self.empty_display_widgets = []
+        self.highlighted_track = None
 
     def update_highlighted_track(self, track_id):
         """

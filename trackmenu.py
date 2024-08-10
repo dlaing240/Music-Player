@@ -37,7 +37,8 @@ class TrackMenu:
         track_menu.add_cascade(label="➕ Add to Playlist",
                                menu=playlist_menu,
                                font=("Arial", 12))
-        playlist_menu.add_command(label="Create New Playlist", command=self.create_playlist_dialogue.open_dialogue)
+        playlist_menu.add_command(label="Create New Playlist",
+                                  command=self.create_playlist_dialogue.open_dialogue)
         for playlist in self.playlists:
             add_to_playlist_command = partial(self.add_to_playlist_command,
                                               playlist[0])
