@@ -48,7 +48,6 @@ class DirectoryScan:
     def mp3_found(self, file_path):
         """Process a discovered mp3 file."""
         file_path_str = str(file_path)
-
         # Need to check whether file path is already in the database
         if self._music_database.track_exists(file_path_str):
             # File found in database - filepath is verified
@@ -59,7 +58,8 @@ class DirectoryScan:
             track_name = str(audio.get('title', ['Unknown Title'])[0])
             artist = str(audio.get('artist', ['Unknown Artist'])[0])
             album = str(audio.get('album', ['Unknown Album'])[0])
-            track_number = int(audio.get('tracknumber', [-1])[0])
+            track_number_str = (audio.get('tracknumber', [-1])[0])
+            track_number = int(track_number_str.split('/')[0])
             release_date = str(audio.get('date', ['Unknown Date'])[0])
             duration = audio.info.length
             genre = str(audio.get('genre', ['Unknown Genre']))
@@ -83,7 +83,7 @@ class DirectoryScan:
 
     def _check_to_add_album(self, album_name, artist, release_date):
         """Check if a new album should be added to the database."""
-        if self._music_database.album_exists(album_name, artist, release_date):
+        if self._music_database.album_exists(album_name, artist):
             return
 
         self._music_database.insert_album(album_name, artist, release_date)
@@ -98,7 +98,6 @@ class DirectoryScan:
                                                     album, release_date)
                 and track_name != "Unknown Title"):
             return
-
         self._music_database.insert_track(track_name, artist, album,
                                           track_number, release_date,
                                           genre, duration, file_path_str)
@@ -153,7 +152,7 @@ class DirectoryScan:
         self._unverified_paths = set(self._music_database.get_all_paths())
 
         for directory in self.get_directories():
-            mp3_files = Path(directory).glob("*.mp3")
+            mp3_files = Path(directory).glob("**/*.mp3")
 
             for file_path in mp3_files:
                 self.mp3_found(file_path)

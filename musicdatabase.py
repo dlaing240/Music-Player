@@ -45,7 +45,7 @@ class MusicDatabase:
         """Return the list of tracks by an artist."""
         return self._artist_database.get_artist_tracklist(artist_id)
 
-    def album_exists(self, album_name, artist, release_date):
+    def album_exists(self, album_name, artist):
         """
         Check if an album exists in the database
 
@@ -58,8 +58,6 @@ class MusicDatabase:
             The title of the album.
         artist : str
             The name of the artist
-        release_date : str
-            The release date of the album.
 
         Returns
         -------
@@ -67,11 +65,11 @@ class MusicDatabase:
             `True` if the album exists in the database, `False` otherwise.
         """
         return self._albums_database.album_exists(album_name,
-                                                  artist,
-                                                  release_date)
+                                                  artist)
 
     def insert_album(self, album_name, artist, release_date):
         """Insert an album into the database."""
+        print("inserting album: ", album_name, artist, release_date)
         self._albums_database.insert_album(album_name, artist, release_date)
 
     def get_album_id(self, album_name, release_date):

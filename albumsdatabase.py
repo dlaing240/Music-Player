@@ -41,7 +41,7 @@ class AlbumsDatabase:
         con.commit()
         con.close()
 
-    def album_exists(self, album_name, artist, release_date):
+    def album_exists(self, album_name, artist):
         """
         Check if an album exists in the database
 
@@ -54,8 +54,6 @@ class AlbumsDatabase:
             The title of the album.
         artist : str
             The name of the artist
-        release_date : str
-            The release date of the album.
 
         Returns
         -------
@@ -70,8 +68,7 @@ class AlbumsDatabase:
         SELECT 1 FROM albums 
         WHERE album_name = ?
         AND artist_id = ?
-        AND release_date = ?
-        ''', (album_name, artist_id, release_date))
+        ''', (album_name, artist_id))
         exists = cur.fetchone() is not None
         con.close()
         return exists
@@ -123,9 +120,8 @@ class AlbumsDatabase:
             '''SELECT album_id 
             FROM albums
             WHERE album_name = ?
-            AND release_date = ?
             ''',
-            (album_name, release_date)
+            (album_name,)
         )
         album = cur.fetchone()
         con.close()

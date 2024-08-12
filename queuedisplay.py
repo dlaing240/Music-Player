@@ -132,7 +132,7 @@ class QueueDisplay(TracksDisplay):
         self._pos_to_item.pop(pos)
 
         # update the rest of the positions
-        for position in range(pos + 1, len(self._pos_to_item)):
+        for position in range(pos + 1, len(self._pos_to_item)+1):
             item = self._pos_to_item[position]
             new_pos = position - 1
             self._pos_to_item[new_pos] = item
