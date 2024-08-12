@@ -130,15 +130,18 @@ class QueueDisplay(TracksDisplay):
             self.highlighted_track = None
         widget.destroy()
         self._pos_to_item.pop(pos)
-
         # update the rest of the positions
         for position in range(pos + 1, len(self._pos_to_item)+1):
             item = self._pos_to_item[position]
             new_pos = position - 1
+            # Move into the new position in the dictionary
             self._pos_to_item[new_pos] = item
+
             # update the widget
             item.track_number_widget.config(text=f"{new_pos+1}")
             item.grid_configure(row=new_pos)
+            if position == len(self._pos_to_item)-1:
+                self._pos_to_item.pop(position)  # remove the duplicate
 
     def _create_move_buttons(self, track_item):
         """Create the buttons to change the position of the track"""

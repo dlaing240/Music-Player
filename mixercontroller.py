@@ -298,10 +298,12 @@ class MixerController:
         else:  # shuffle is being switched off.
             self.active_queue = self._raw_queue_list.copy()
 
-        if self.current_track_id:
+        if self.current_track_id and self.current_track_id in self.active_queue:
             self.pos_in_queue = self.active_queue.index(self.current_track_id)
         self._shuffle_on = not self._shuffle_on
-        self._load_next_song()
+
+        if self.active_queue:
+            self._load_next_song()
 
         return self._shuffle_on
 
