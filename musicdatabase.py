@@ -69,7 +69,6 @@ class MusicDatabase:
 
     def insert_album(self, album_name, artist, release_date):
         """Insert an album into the database."""
-        print("inserting album: ", album_name, artist, release_date)
         self._albums_database.insert_album(album_name, artist, release_date)
 
     def get_album_id(self, album_name, release_date):

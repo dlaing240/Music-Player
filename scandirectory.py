@@ -58,7 +58,7 @@ class DirectoryScan:
             track_name = str(audio.get('title', ['Unknown Title'])[0])
             artist = str(audio.get('artist', ['Unknown Artist'])[0])
             album = str(audio.get('album', ['Unknown Album'])[0])
-            track_number_str = (audio.get('tracknumber', [-1])[0])
+            track_number_str = str(audio.get('tracknumber', [-1])[0])
             track_number = int(track_number_str.split('/')[0])
             release_date = str(audio.get('date', ['Unknown Date'])[0])
             duration = audio.info.length
