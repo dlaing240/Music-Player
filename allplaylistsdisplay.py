@@ -5,77 +5,87 @@ from tkinter import messagebox
 from musicdatabase import MusicDatabase
 from playlistitem import PlaylistItem
 
-from root import colour_scheme, CHILI_RED
+from root import colour_scheme
 
 
 class AllPlaylistsDisplay:
     """
-    Class for displaying the list of user playlists
+    Class for displaying the list of user playlists.
+
+    Attributes
+    ----------
+    playlist_items_dict : dict
+        Dictionary with `playlist_id` keys and `PlaylistItem` values.
+
+    Methods
+    -------
+    display_playlist_list():
+        Display the list of playlists.
+    clear_display():
+        Destroy all playlist widgets.
     """
+
     def __init__(self, display_frame, display_canvas,
                  music_database: MusicDatabase, open_playlist_command):
-        self.display_frame = display_frame
-        self.display_canvas = display_canvas
-        self.music_db = music_database
-        self.open_playlist_command = open_playlist_command
-        self.playlist_items_dict = {}
+        """
+        Initialise a `AllPlaylistsDisplay` instance.
 
-        self.delete_playlist = self.music_db.delete_playlist
+        Parameters
+        ----------
+        display_frame : tkinter.Frame
+            The frame to place widgets upon.
+        display_canvas : tkinter.Canvas
+            The scrollable canvas that contains the `display_frame`.
+        music_database : MusicDatabase
+            Instance of the Music Database class.
+        open_playlist_command : callable
+            Method called when an 'open' button is pressed.
+        """
+        self._display_frame = display_frame
+        self._display_canvas = display_canvas
+        self._music_db = music_database
+        self._open_playlist_command = open_playlist_command
+        self.playlist_items_dict = {}
+        self._colour_scheme = colour_scheme
+
+        self.delete_playlist = self._music_db.delete_playlist
 
     def display_playlist_list(self):
-        """
-        Displays the list of playlists
-
-        Returns
-        -------
-
-        """
+        """Display the list of playlists."""
         self.clear_display()
-        playlists = self.music_db.get_playlists()
+        playlists = self._music_db.get_playlists()
         for playlist_id in playlists:
-            open_playlist_command = partial(self.open_playlist_command, playlist_id)
+            open_playlist_command = partial(self._open_playlist_command, playlist_id)
 
-            self.create_playlist_item(
+            self._create_playlist_item(
                 playlist_id,
                 playlist_name=playlists[playlist_id],
                 open_playlist_command=open_playlist_command
             )
 
-        self.create_delete_buttons()
-        self.display_canvas.yview_moveto(0)
+        self._create_delete_buttons()
+        self._display_canvas.yview_moveto(0)
 
-    def create_playlist_item(self, playlist_id, playlist_name,
-                             open_playlist_command):
-        """
-        Creates the playlist item
-
-        Parameters
-        ----------
-        playlist_id
-        playlist_name
-        open_playlist_command
-
-        Returns
-        -------
-
-        """
-
-        playlist = PlaylistItem(self.display_frame, open_playlist_command,
+    def _create_playlist_item(self, playlist_id, playlist_name,
+                              open_playlist_command):
+        """Create a playlist item."""
+        playlist = PlaylistItem(self._display_frame, open_playlist_command,
                                 playlist_id, playlist_name)
         playlist.grid(column=0, sticky="news", pady=5, padx=10)
         self.playlist_items_dict[playlist_id] = playlist
 
-    def create_delete_buttons(self):
+    def _create_delete_buttons(self):
+        """Create delete buttons."""
         for playlist_id in self.playlist_items_dict:
             playlist_item = self.playlist_items_dict[playlist_id]
 
-            delete_playlist_command = partial(self.delete_playlist_command,
+            delete_playlist_command = partial(self._delete_playlist_command,
                                               playlist_id)
             delete_button = tk.Button(playlist_item,
                                       text="❌",
                                       command=delete_playlist_command,
-                                      bg=colour_scheme["dark"],
-                                      fg=CHILI_RED,
+                                      bg=self._colour_scheme["dark"],
+                                      fg=self._colour_scheme["chili_red"],
                                       relief="flat",
                                       font=("Arial", 18),
                                       anchor="e")
@@ -83,7 +93,8 @@ class AllPlaylistsDisplay:
                                rowspan=2, padx=20,
                                sticky="e")
 
-    def delete_playlist_command(self, playlist_id):
+    def _delete_playlist_command(self, playlist_id):
+        """Begin procedure to delete a playlist from the database."""
         response = messagebox.askyesno(
             "Delete Playlist",
             "This will permanently delete the playlist.\nContinue?"
@@ -91,17 +102,9 @@ class AllPlaylistsDisplay:
         if response:
             self.delete_playlist(playlist_id)
             self.display_playlist_list()
-        else:
-            return
 
     def clear_display(self):
-        """
-        Destroys all playlist widgets
-
-        Returns
-        -------
-
-        """
+        """Destroy all playlist widgets."""
         for playlist_id in self.playlist_items_dict:
             self.playlist_items_dict[playlist_id].destroy()
         self.playlist_items_dict = {}

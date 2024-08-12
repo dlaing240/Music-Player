@@ -5,23 +5,30 @@ from artistsdatabase import ArtistsDatabase
 
 class AlbumsDatabase:
     """
-    Class responsible for handling operations with the albums database
+    Class for handling database operations related to albums.
+
+    This class is not used directly by other components, as the
+    `MusicDatabase` class provides the interface for database operations.
     """
 
     def __init__(self, db_path, artist_database: ArtistsDatabase):
-        self.db_path = db_path
-        self.artist_database = artist_database
+        """
+        Initialise an `AlbumsDatabase` instance.
 
-        self.create_database()
+        Parameters
+        ----------
+        db_path : str
+            The path to the database.
+        artist_database : ArtistsDatabase
+            The instance of the `ArtistsDatabase` class.
+        """
+        self._db_path = db_path
+        self._artist_database = artist_database
 
     def create_database(self):
-        """
-        Creates the albums table if it doesn't already exist
-        :return:
-        """
-        con = sqlite3.connect(self.db_path)
+        """Creates the `albums` table if it doesn't already exist"""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
-        # Albums database
         cur.execute('''
             CREATE TABLE IF NOT EXISTS albums (
                 album_id INTEGER PRIMARY KEY,
@@ -36,11 +43,28 @@ class AlbumsDatabase:
 
     def album_exists(self, album_name, artist, release_date):
         """
-        Checks whether the given album can be found in the database
-        """
-        artist_id = self.artist_database.get_artist_id(artist)
+        Check if an album exists in the database
 
-        con = sqlite3.connect(self.db_path)
+        The album's title, artist and release date are considered to
+        ensure that only exact matches give a positive result.
+
+        Parameters
+        ----------
+        album_name : str
+            The title of the album.
+        artist : str
+            The name of the artist
+        release_date : str
+            The release date of the album.
+
+        Returns
+        -------
+        bool
+            `True` if the album exists in the database, `False` otherwise.
+        """
+        artist_id = self._artist_database.get_artist_id(artist)
+
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''
         SELECT 1 FROM albums 
@@ -54,11 +78,20 @@ class AlbumsDatabase:
 
     def insert_album(self, album_name, artist, release_date):
         """
-        Adds the given album details to the database
-        """
-        artist_id = self.artist_database.get_artist_id(artist)
+        Insert an album into the database.
 
-        con = sqlite3.connect(self.db_path)
+        Parameters
+        ----------
+        album_name : str
+            The title of the album.
+        artist : str
+            The name of the artist
+        release_date : str
+            The release date of the album.
+        """
+        artist_id = self._artist_database.get_artist_id(artist)
+
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''
         INSERT INTO albums (album_name, release_date, artist_id)
@@ -69,9 +102,21 @@ class AlbumsDatabase:
 
     def get_album_id(self, album_name, release_date):
         """
-        Returns an album's album_id
+        Return an album's unique identifier
+
+        Parameters
+        ----------
+        album_name : str
+            The title of the album.
+        release_date : str
+            The release date of the album.
+
+        Returns
+        -------
+        int
+            The unique identifier for the album.
         """
-        con = sqlite3.connect(self.db_path)
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         # Write query
         cur.execute(
@@ -92,7 +137,8 @@ class AlbumsDatabase:
         return album_id
 
     def get_album_title(self, album_id):
-        con = sqlite3.connect(self.db_path)
+        """Return the album's title from its identifier."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute(
             '''SELECT album_name
@@ -107,13 +153,25 @@ class AlbumsDatabase:
 
     def get_album_metadata(self, album_ids):
         """
-        Method used to get the album data corresponding to the
-        provided album_ids
+        Get data about albums from their identifiers.
+
+        Parameters
+        ----------
+        album_ids : list of int
+            A list containing the unique identifiers of albums in the
+            database.
+
+        Returns
+        -------
+        dict
+            A dictionary where each key is an `album_id` and its value
+            is a dictionary containing the information about that
+            album.
         """
         id_tuple = tuple(album_ids)
         expression = '(' + ','.join('?' for _ in id_tuple) + ')'
 
-        con = sqlite3.connect(self.db_path)
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute(f'''
         SELECT album_id, album_name, release_date, artist_id
@@ -127,7 +185,7 @@ class AlbumsDatabase:
         for row in albums_rows:
             album_id = row[0]
             artist_id = row[3]
-            artist_name = self.artist_database.get_artist_name(artist_id)
+            artist_name = self._artist_database.get_artist_name(artist_id)
             album = {
                 "album_id": album_id,
                 "album_name": row[1],
@@ -140,10 +198,8 @@ class AlbumsDatabase:
         return albums_info
 
     def get_all_albums(self):
-        """
-        Method to get a list of all album_ids in the albums database
-        """
-        con = sqlite3.connect(self.db_path)
+        """Return a list of every `album_id` in the albums database."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute(
             '''SELECT album_id, album_name
@@ -160,10 +216,8 @@ class AlbumsDatabase:
         return albums
 
     def get_album_tracklist(self, album_id):
-        """
-        Method to get the ordered tracklist for an album.
-        """
-        con = sqlite3.connect(self.db_path)
+        """Return a list of `track_id`s in the given album."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute(
             '''SELECT track_id

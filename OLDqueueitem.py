@@ -10,11 +10,13 @@ TRACK_LIST_COL = colour_scheme["dark"]
 
 
 class QueueItem(TrackItem):
+    """Unused class for widgets that represent a track in the queue."""
+
     def __init__(self, parent, play_command, track_name, artist_name,
                  artist_id, album, album_id, release_date, track_number,
                  duration, queue_index, reorder_queue_function, track_id,
                  queue_max, add_to_queue_command, play_next_command,
-                 add_to_playlist_command, playlists, create_new_playlist_command,):
+                 add_to_playlist_command, playlists, create_new_playlist_command):
         super().__init__(parent, play_command, track_name,
                          artist_name, artist_id, album,
                          album_id, release_date, track_number,

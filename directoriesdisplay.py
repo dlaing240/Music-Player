@@ -3,95 +3,124 @@ from tkinter import messagebox
 
 from scandirectory import DirectoryScan
 
-from root import colour_scheme, BATTLESHIP_GREY, CHILI_RED
+from root import colour_scheme
 
 
 class DirectoriesDisplay:
+    """
+    Class to display a list of directories.
+
+    Methods
+    -------
+    display():
+        Display the directories list.
+    clear_display():
+        Destroy all widgets in the directories display.
+    received_directories_updated_signal():
+        Refresh the display
+    """
+
     def __init__(self, directory_scan: DirectoryScan,
                  display_frame):
-        self.directory_scan = directory_scan
-        self.directory_labels = []
-        self.display_frame = display_frame
+        """
+        Initialise a `DirectoriesDisplay` instance.
 
-        self.directory_scan.directories_updated_observers.append(self)
+        Parameters
+        ----------
+        directory_scan : DirectoryScan
+            Instance of `DirectoryScan`.
+        display_frame : tkinter.Frame
+            The frame to place widgets upon.
+        """
+        self._directory_scan = directory_scan
+        self._directory_labels = []
+        self._display_frame = display_frame
+        self._colour_scheme = colour_scheme
+
+        self._directory_scan.directories_updated_observers.append(self)
 
     def display(self):
-        self.create_directories_list()
+        """Display the directories list."""
+        self._create_directories_list()
 
     def clear_display(self):
-        for label in self.directory_labels:
+        """Destroy all widgets in the directories display."""
+        for label in self._directory_labels:
             label.destroy()
 
-        self.directory_labels = []
+        self._directory_labels = []
 
-    def create_directories_list(self):
-        directories = self.directory_scan.get_directories()
+    def _create_directories_list(self):
+        """Create labels for each directory."""
+        directories = self._directory_scan.get_directories()
 
         if not directories:
-            self.no_directories()
+            self._no_directories()
             return
 
-        header_2 = tk.Label(self.display_frame,
+        header_2 = tk.Label(self._display_frame,
                             text="Your music folders:",
-                            bg=colour_scheme["grey"],
-                            fg=BATTLESHIP_GREY,
+                            bg=self._colour_scheme["grey"],
+                            fg=self._colour_scheme["battleship"],
                             font=("Arial", 20)
                             )
         header_2.grid(pady=5)
-        self.directory_labels.append(header_2)
+        self._directory_labels.append(header_2)
 
         count = 1
 
         for directory in directories:
             directory_txt = tk.Label(
-                self.display_frame,
+                self._display_frame,
                 text=directory,
-                bg=colour_scheme["grey"],
-                fg=BATTLESHIP_GREY,
+                bg=self._colour_scheme["grey"],
+                fg=self._colour_scheme["battleship"],
                 font=("Arial", 16)
             )
             directory_txt.grid(row=count, column=0, sticky="news", pady=5)
 
             remove_button = tk.Button(
-                self.display_frame,
+                self._display_frame,
                 text="❌",
-                command=lambda d=directory: self.remove_directory_function(d),
-                bg=colour_scheme["grey"],
-                fg=CHILI_RED,
+                command=lambda d=directory: self._remove_directory_function(d),
+                bg=self._colour_scheme["grey"],
+                fg=self._colour_scheme["chili_red"],
                 relief="flat",
                 font=("Arial", 18))
             remove_button.grid(row=count, column=1, sticky="e")
 
             count += 1
 
-            self.directory_labels.extend([directory_txt, remove_button])
+            self._directory_labels.extend([directory_txt, remove_button])
 
-    def remove_directory_function(self, directory):
+    def _remove_directory_function(self, directory):
+        """Remove a directory from the display and scan."""
         result = messagebox.askyesno(
             "Confirm Removal",
-            "Music in this directory will be removed from your list.\nContinue?"
+            "Music in this directory will be removed from your library.\nContinue?"
         )
 
         if result:
-            self.directory_scan.remove_directory(directory)
-            self.directory_scan.scan_directory()
+            self._directory_scan.remove_directory(directory)
+            self._directory_scan.scan_directory()
             # refresh the display
             self.clear_display()
             self.display()
         else:
             print("Canceled")
 
-    def no_directories(self):
-        empty_label = tk.Label(self.display_frame,
+    def _no_directories(self):
+        """Create a display for an emtpy list of directories."""
+        empty_label = tk.Label(self._display_frame,
                                text="Your list of folders is empty",
-                               bg=colour_scheme["grey"],
-                               fg=BATTLESHIP_GREY,
+                               bg=self._colour_scheme["grey"],
+                               fg=self._colour_scheme["battleship"],
                                font=("Arial", 14)
                                )
         empty_label.grid()
-        self.directory_labels.append(empty_label)
+        self._directory_labels.append(empty_label)
 
     def received_directories_updated_signal(self):
-        # refresh the display
+        """Refresh the display."""
         self.clear_display()
         self.display()

@@ -3,19 +3,28 @@ import sqlite3
 
 class ArtistsDatabase:
     """
-    Class responsible for handling operations with the artists database
+    Class responsible for handling operations with the artists database.
+
+    This class is not used directly by other components, as the
+    `MusicDatabase` class provides the interface for database
+     operations.
     """
+
     def __init__(self, db_path):
-        self.db_path = db_path
-        self.create_database()
+        """
+        Initialise an `ArtistDatabase` instance.
+
+        Parameters
+        ----------
+        db_path : str
+            The path to the database.
+        """
+        self._db_path = db_path
 
     def create_database(self):
-        """
-        Creates the artists table if it doesn't already exist
-        """
-        con = sqlite3.connect(self.db_path)
+        """Create the artists table if it doesn't already exist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
-        # Artist database
         cur.execute('''CREATE TABLE IF NOT EXISTS artists(
                     artist_id INTEGER PRIMARY KEY,
                     artist_name TEXT NOT NULL)''')
@@ -23,18 +32,14 @@ class ArtistsDatabase:
         con.close()
 
     def artist_exists(self, artist_name):
-        """
-        Checks whether the provided artist is in the database
-        """
+        """Check if the provided artist is in the database."""
         if self.get_artist_id(artist_name):
             return True
         return False
 
     def insert_artist(self, artist_name):
-        """
-        Adds the artist to the database
-        """
-        con = sqlite3.connect(self.db_path)
+        """Add the artist to the database."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''INSERT INTO artists (artist_name)
                     VALUES (?)''',
@@ -43,10 +48,8 @@ class ArtistsDatabase:
         con.close()
 
     def get_artist_id(self, artist_name):
-        """
-        Returns the artist's artist_id
-        """
-        con = sqlite3.connect(self.db_path)
+        """Return the artist's `artist_id`."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''SELECT artist_id
                     FROM artists
@@ -63,7 +66,8 @@ class ArtistsDatabase:
         return artist_id
 
     def get_artist_name(self, artist_id):
-        con = sqlite3.connect(self.db_path)
+        """Return the artist's name from the identifier."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''SELECT artist_name
                     FROM artists
@@ -75,10 +79,8 @@ class ArtistsDatabase:
         return artist_name
 
     def get_all_artists(self):
-        """
-        Gets a list of all the artist_ids in the database
-        """
-        con = sqlite3.connect(self.db_path)
+        """Return a list of all the artist_ids in the database."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''SELECT artist_id, artist_name
                     FROM artists
@@ -93,14 +95,11 @@ class ArtistsDatabase:
         return artists
 
     def get_artist_metadata(self, artist_ids):
-        """
-        Gets the database data corresponding to each artist in the given list
-        of artist_ids
-        """
+        """Return data about the artists from a list of `artist_id`s."""
         id_tuple = tuple(artist_ids)
         expression = '(' + ','.join('?' for _ in id_tuple) + ')'
 
-        con = sqlite3.connect(self.db_path)
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute(f'''SELECT artist_id, artist_name
                     FROM artists
@@ -121,10 +120,8 @@ class ArtistsDatabase:
         return artists_info
 
     def get_artist_tracklist(self, artist_id):
-        """
-        Gets the list of tracks by the provided artist
-        """
-        con = sqlite3.connect(self.db_path)
+        """Return the list of tracks by an artist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''SELECT track_id 
                     FROM tracks 
@@ -139,10 +136,8 @@ class ArtistsDatabase:
         return tracks
 
     def get_artist_albumlist(self, artist_id):
-        """
-        Gets a list of albums by the artist
-        """
-        con = sqlite3.connect(self.db_path)
+        """Return a list of albums by the artist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''SELECT album_id, album_name 
                     FROM albums 

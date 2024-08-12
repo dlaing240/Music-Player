@@ -2,15 +2,22 @@ import sqlite3
 
 
 class PlaylistDatabase:
-    def __init__(self, db_path):
-        self.db_path = db_path
+    """
+    Class for handling database operations involving playlists.
 
+    This class is not used directly by other components, as the
+    `MusicDatabase` class provides the interface for database operations.
+    """
+
+    def __init__(self, db_path):
+        """Initialise a `PlaylistDatabase` instance."""
+        self._db_path = db_path
         self.create_tables()
 
     def create_tables(self):
-        con = sqlite3.connect(self.db_path)
+        """Create the `playlists` and `playlist_tracks` tables if they don't exist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
-        # Playlists - contains all user's playlists
         cur.execute('''
             CREATE TABLE IF NOT EXISTS playlists (
                 playlist_id INTEGER PRIMARY KEY,
@@ -18,7 +25,6 @@ class PlaylistDatabase:
             )
         ''')
 
-        # playlist_tracks - links track_ids to playlist_ids
         cur.execute('''
             CREATE TABLE IF NOT EXISTS playlist_tracks (
                 identifier INTEGER PRIMARY KEY,
@@ -35,10 +41,8 @@ class PlaylistDatabase:
         con.close()
 
     def create_playlist(self, playlist_name):
-        """
-        Creates a new playlist
-        """
-        con = sqlite3.connect(self.db_path)
+        """Create a new playlist with the given name."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''
             INSERT INTO playlists (playlist_name)
@@ -48,7 +52,8 @@ class PlaylistDatabase:
         con.close()
 
     def get_max_pos(self, playlist_id):
-        con = sqlite3.connect(self.db_path)
+        """Return the largest position of a track in the playlist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
 
         # Find position of the new track
@@ -64,7 +69,8 @@ class PlaylistDatabase:
         return max_position
 
     def get_min_pos(self, playlist_id):
-        con = sqlite3.connect(self.db_path)
+        """Return the minimum position of a track in the database."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
 
         # Find position of the new track
@@ -80,7 +86,8 @@ class PlaylistDatabase:
         return min_position
 
     def add_to_playlist(self, track_id, playlist_id):
-        con = sqlite3.connect(self.db_path)
+        """Add a track to a playlist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
 
         max_position = self.get_max_pos(playlist_id)
@@ -93,7 +100,8 @@ class PlaylistDatabase:
         con.close()
 
     def remove_from_playlist(self, track_id, playlist_id):
-        con = sqlite3.connect(self.db_path)
+        """Remove a track from a playlist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''
             DELETE FROM playlist_tracks
@@ -103,7 +111,8 @@ class PlaylistDatabase:
         con.close()
 
     def get_playlist_tracks(self, playlist_id):
-        con = sqlite3.connect(self.db_path)
+        """Return the list of tracks in a playlist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''
             SELECT track_id FROM playlist_tracks
@@ -120,7 +129,8 @@ class PlaylistDatabase:
         return tracks
 
     def get_playlists(self):
-        con = sqlite3.connect(self.db_path)
+        """Return a list of all playlists in the database."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''
             SELECT playlist_id, playlist_name
@@ -138,7 +148,8 @@ class PlaylistDatabase:
         return playlists
 
     def get_playlist_name(self, playlist_id):
-        con = sqlite3.connect(self.db_path)
+        """Return the name of a playlist from its ID."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''SELECT playlist_name
                     FROM playlists
@@ -150,18 +161,8 @@ class PlaylistDatabase:
         return playlist_name
 
     def remove_from_all(self, track_id):
-        """
-        Removes a track from all playlists
-
-        Parameters
-        ----------
-        track_id
-
-        Returns
-        -------
-
-        """
-        con = sqlite3.connect(self.db_path)
+        """Remove a track from all playlists."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''
             SELECT playlist_id
@@ -174,18 +175,8 @@ class PlaylistDatabase:
             self.remove_from_playlist(track_id, playlist_id)
 
     def delete_playlist(self, playlist_id):
-        """
-        Deletes the playlist from the database
-
-        Parameters
-        ----------
-        playlist_id
-
-        Returns
-        -------
-
-        """
-        con = sqlite3.connect(self.db_path)
+        """Delete a playlist from the database."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
 
         # Delete playlist
@@ -204,20 +195,8 @@ class PlaylistDatabase:
         con.close()
 
     def swap_positions(self, playlist_id, pos_1, pos_2):
-        """
-        Swaps the positions of two tracks in a playlist
-
-        Parameters
-        ----------
-        playlist_id
-        pos_1
-        pos_2
-
-        Returns
-        -------
-
-        """
-        con = sqlite3.connect(self.db_path)
+        """Swap the positions of two tracks in a playlist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         # Move track in pos_1 to a temporary position
         cur.execute('''
@@ -244,12 +223,13 @@ class PlaylistDatabase:
         con.close()
 
     def get_track_pos(self, playlist_id, track_id):
-        con = sqlite3.connect(self.db_path)
+        """Return the position of a track in a playlist."""
+        con = sqlite3.connect(self._db_path)
         cur = con.cursor()
         cur.execute('''SELECT position
                     FROM playlist_tracks
                     WHERE playlist_id = ? AND track_id = ?  
                     ''', (playlist_id, track_id))
-        position = cur.fetchone()[0]
         con.close()
+        position = cur.fetchone()[0]
         return position
