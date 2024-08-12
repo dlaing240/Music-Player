@@ -234,3 +234,13 @@ class AlbumsDatabase:
             tracks.append(track_data[0])
 
         return tracks
+
+    def delete_album(self, album_id):
+        """Delete an album from the database."""
+        con = sqlite3.connect(self._db_path)
+        cur = con.cursor()
+        cur.execute('''
+            DELETE FROM albums WHERE album_id = ?
+        ''', (album_id,))
+        con.commit()
+        con.close()

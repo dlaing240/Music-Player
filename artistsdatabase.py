@@ -151,3 +151,13 @@ class ArtistsDatabase:
             albums[album_data[0]] = album_data[1]
         print(albums)
         return albums
+
+    def delete_artist(self, artist_id):
+        """Delete an artist from the database."""
+        con = sqlite3.connect(self._db_path)
+        cur = con.cursor()
+        cur.execute('''
+            DELETE FROM artists WHERE artist_id = ?
+        ''', (artist_id,))
+        con.commit()
+        con.close()

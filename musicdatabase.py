@@ -226,3 +226,27 @@ class MusicDatabase:
     def get_max_pos(self, playlist_id):
         """Return the largest position of a track in the playlist."""
         return self._playlist_database.get_max_pos(playlist_id)
+
+    def verify_albums(self):
+        """Verify and remove trackless albums from database."""
+        albums = self.get_all_albums()
+        for album_id in albums:
+            album_tracklist = self.get_album_tracklist(album_id)
+            if not album_tracklist:
+                self.delete_album(album_id)
+
+    def verify_artists(self):
+        """Verify and remove trackless artists from database."""
+        artists = self.get_all_artists()
+        for artist_id in artists:
+            artist_tracklist = self.get_artist_tracklist(artist_id)
+            if not artist_tracklist:
+                self.delete_artist(artist_id)
+
+    def delete_album(self, album_id):
+        """Delete an album from the database."""
+        return self._albums_database.delete_album(album_id)
+
+    def delete_artist(self, artist_id):
+        """Delete an album from the database."""
+        return self._artist_database.delete_artist(artist_id)

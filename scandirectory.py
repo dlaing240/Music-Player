@@ -162,6 +162,10 @@ class DirectoryScan:
         if self._unverified_paths:
             self._music_database.remove_by_paths(self._unverified_paths)
 
+        # Verify the albums and artists in the database
+        self._music_database.verify_albums()
+        self._music_database.verify_artists()
+
     def verify_paths(self, path_list):
         """
         Verify a list of file paths and remove invalid tracks.
