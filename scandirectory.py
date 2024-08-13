@@ -117,6 +117,7 @@ class DirectoryScan:
         for directory in directories:
             path = Path(directory)
             if not path.exists() and not path.is_dir():
+                print("exists: ", path.exists(), "is_dir: ", path.is_dir())
                 print(directory, " is an invalid directory")
                 directories.remove(directory)
                 directories_updated = True
@@ -128,6 +129,12 @@ class DirectoryScan:
 
     def add_directory(self, directory_path):
         """Add a directory to the file of directories."""
+        directories = self.get_directories()
+
+        # Prevent duplicates
+        if directory_path in directories:
+            return
+
         with open(self._directories_file, 'a') as f:
             f.write(directory_path + '\n')
 
