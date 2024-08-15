@@ -230,6 +230,6 @@ class PlaylistDatabase:
                     FROM playlist_tracks
                     WHERE playlist_id = ? AND track_id = ?  
                     ''', (playlist_id, track_id))
-        con.close()
         position = cur.fetchone()[0]
+        con.close()
         return position
